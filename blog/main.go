@@ -2,13 +2,21 @@ package main
 
 import (
 	"go-blog/handlers"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	http.HandleFunc("/", handlers.HomeHandler)
-	http.HandleFunc("/post", handlers.ViewPostHandler)
-	http.HandleFunc("/new", handlers.NewPostHandler)
-	http.HandleFunc("/create", handlers.CreatePostHandler)
-	http.ListenAndServe(":8080", nil)
+	r := gin.Default()
+
+	r.LoadHTMLGlob("templates/*")
+
+	// Routes
+	r.GET("/", handlers.HomeHandler)
+	r.GET("/post", handlers.ViewPostHandler)
+	r.GET("/new", handlers.NewPostHandler)
+	r.POST("/create", handlers.CreatePostHandler)
+
+	// Start server
+	r.Run(":8080")
 }

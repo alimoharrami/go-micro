@@ -2,44 +2,42 @@ package handlers
 
 import (
 	"go-blog/data"
-	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
-var templates = template.Must(template.ParseGlob("templates/*.html"))
 var Posts = []data.Post{} // Temporary in-memory store
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "index.html", Posts)
+func HomeHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", Posts)
 }
 
-func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+func ViewPostHandler(c *gin.Context) {
+	idStr := c.Query("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id < 0 || id >= len(Posts) {
-		http.NotFound(w, r)
+		c.String(http.StatusNotFound, "Post not found")
 		return
 	}
-	templates.ExecuteTemplate(w, "post.html", Posts[id])
+	c.HTML(http.StatusOK, "post.html", Posts[id])
 }
 
-func NewPostHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "new.html", nil)
+func NewPostHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "new.html", nil)
 }
 
-func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-	title := r.FormValue("title")
-	content := r.FormValue("content")
+func CreatePostHandler(c *gin.Context) {
+	title := c.PostForm("title")
+	content := c.PostForm("content")
+
 	post := data.Post{
 		ID:      len(Posts),
 		Title:   title,
 		Content: content,
 	}
 	Posts = append(Posts, post)
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+
+	c.Redirect(http.StatusSeeOther, "/")
 }
