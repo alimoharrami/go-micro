@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-blog/internal/middleware"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -26,6 +27,17 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
+
+	r.LoadHTMLGlob("../../web/*")
+
+	// Serve static files
+	r.Static("/static", "../../static")
+
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"title": "Welcome to Go Backend",
+		})
+	})
 
 	return r
 }

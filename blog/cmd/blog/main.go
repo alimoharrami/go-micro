@@ -1,11 +1,11 @@
 package main
 
 import (
-	handlers "go-blog/internal/api"
 	"go-blog/internal/database"
 	"log"
 
 	"go-blog/internal/config"
+	"go-blog/internal/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,12 +37,8 @@ func main() {
 
 	r.LoadHTMLGlob("../../web/*")
 
-	// Routes
-	r.GET("/", handlers.HomeHandler)
-	r.GET("/post", handlers.ViewPostHandler)
-	r.GET("/new", handlers.NewPostHandler)
-	r.POST("/create", handlers.CreatePostHandler)
+	router := routes.SetRouter(db)
 
 	// Start server
-	r.Run(":8080")
+	router.Run(":8080")
 }
