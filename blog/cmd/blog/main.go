@@ -2,10 +2,12 @@ package main
 
 import (
 	handlers "go-blog/internal/api"
+	"go-blog/internal/database"
 	"log"
 
-	"github.com/gin-gonic/gin"
 	"go-blog/internal/config"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -16,6 +18,21 @@ func main() {
 	}
 
 	log.Println(cfg.Server.Port)
+
+	// init dbs
+	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
+	db := database.GetPostgres()
+	sqlDb, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get DB connection: %v", err)
+	}
+
+	defer sqlDb.Close()
+
+	//Initialize Redis
+	// redisClient := database.GetRedis()
+	// defer redisClient.Close()
+
 	r := gin.Default()
 
 	r.LoadHTMLGlob("../../web/*")
