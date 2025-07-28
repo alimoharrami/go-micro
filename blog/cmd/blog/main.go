@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-blog/handlers"
+	handlers "go-blog/internal/api"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,7 +9,7 @@ import (
 func main() {
 	r := gin.Default()
 
-	r.LoadHTMLGlob("templates/*")
+	r.LoadHTMLGlob("../../web/*")
 
 	// Routes
 	r.GET("/", handlers.HomeHandler)

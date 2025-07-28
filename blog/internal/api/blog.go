@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"go-blog/data"
+	data "go-blog/internal/domain"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var Posts = []data.Post{} // Temporary in-memory store
+var Posts = []data.Post{}
 
 func HomeHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", Posts)
