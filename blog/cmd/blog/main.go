@@ -1,8 +1,15 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"go-blog/internal/database"
+	"go-blog/internal/server"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"go-blog/internal/config"
 	"go-blog/internal/routes"
@@ -39,6 +46,32 @@ func main() {
 
 	router := routes.SetRouter(db)
 
-	// Start server
-	router.Run(":8080")
+	srv := server.NewServer(router)
+
+	// Handle graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-quit
+		fmt.Println("Shutting down server...")
+
+		// Create shutdown context with a timeout
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		// Shutdown services gracefully
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatalf("Server shutdown failed: %v", err)
+		}
+
+		// redisClient.Close()
+		sqlDb.Close()
+		fmt.Println("Server gracefully stopped")
+	}()
+
+	//start server
+	port := cfg.Server.Port
+	if err := srv.Start(port); err != nil {
+		log.Fatalf("Failed to start service: %v", err)
+	}
 }
