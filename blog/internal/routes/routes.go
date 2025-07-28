@@ -1,7 +1,10 @@
 package routes
 
 import (
+	handlers "go-blog/internal/handlers/user"
 	"go-blog/internal/middleware"
+	"go-blog/internal/repository"
+	"go-blog/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,9 +13,9 @@ import (
 
 // Route defines the structure for dynamic routing
 type Route struct {
-	Method     string
-	Path       string
-	HandleFunc gin.HandlerFunc
+	Method      string
+	Path        string
+	HandlerFunc gin.HandlerFunc
 }
 
 // Controller defines the structure for a controller with routes
@@ -38,6 +41,31 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 			"title": "Welcome to Go Backend",
 		})
 	})
+
+	//initialize Repositories
+	userRepo := repository.NewUserRepository(db)
+
+	userService := service.NewUserService(userRepo)
+
+	userController := handlers.NewUserController(userService)
+
+	// Define controllers and their routes
+	controllers := map[string]Controller{
+		"user": {
+			Routes: []Route{
+				{"GET", "/users/:id", userController.GetUserByID},
+				{"POST", "/users", userController.CreateUser},
+			},
+		},
+	}
+
+	// Register all routes dynamically
+	api := r.Group("/api")
+	for _, controller := range controllers {
+		for _, route := range controller.Routes {
+			api.Handle(route.Method, route.Path, route.HandlerFunc)
+		}
+	}
 
 	return r
 }
