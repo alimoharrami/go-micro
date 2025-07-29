@@ -1,7 +1,7 @@
 package routes
 
 import (
-	handlers "go-blog/internal/handlers/user"
+	"go-blog/internal/handlers"
 	"go-blog/internal/middleware"
 	"go-blog/internal/repository"
 	"go-blog/internal/service"
@@ -44,10 +44,13 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 
 	//initialize Repositories
 	userRepo := repository.NewUserRepository(db)
+	postRepo := repository.NewPostRepository(db)
 
 	userService := service.NewUserService(userRepo)
+	PostService := service.NewPostService(postRepo)
 
 	userController := handlers.NewUserController(userService)
+	postController := handlers.NewPostController(PostService)
 
 	// Define controllers and their routes
 	controllers := map[string]Controller{
@@ -55,6 +58,15 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 			Routes: []Route{
 				{"GET", "/users/:id", userController.GetUserByID},
 				{"POST", "/users", userController.CreateUser},
+			},
+		},
+		"post": {
+			Routes: []Route{
+				{"GET", "/posts", postController.ListPosts},
+				{"POST", "/posts", postController.CreatePost},
+				{"PUT", "/posts/:id", postController.UpdatePost},
+				{"DELETE", "/posts/:id", postController.DeletePost},
+				{"GET", "/posts/:id", postController.GetPostByID},
 			},
 		},
 	}
