@@ -5,6 +5,7 @@ import (
 	"go-blog/internal/middleware"
 	"go-blog/internal/repository"
 	"go-blog/internal/service"
+	"go-blog/pkg/auth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +37,7 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	// Serve static files
 	r.Static("/static", "../../static")
 
-	r.GET("/", func(c *gin.Context) {
+	r.GET("/", auth.JWTAuthMiddleware(), func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "Welcome to Go Backend",
 		})
@@ -48,9 +49,11 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 
 	userService := service.NewUserService(userRepo)
 	PostService := service.NewPostService(postRepo)
+	AuthService := service.NewAuthService(userRepo)
 
 	userController := handlers.NewUserController(userService)
 	postController := handlers.NewPostController(PostService)
+	AuthController := handlers.NewAuthController(AuthService)
 
 	// Define controllers and their routes
 	controllers := map[string]Controller{
@@ -67,6 +70,11 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 				{"PUT", "/posts/:id", postController.UpdatePost},
 				{"DELETE", "/posts/:id", postController.DeletePost},
 				{"GET", "/posts/:id", postController.GetPostByID},
+			},
+		},
+		"auth": {
+			Routes: []Route{
+				{"POST", "/auth", AuthController.Login},
 			},
 		},
 	}

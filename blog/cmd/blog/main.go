@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-blog/internal/database"
 	"go-blog/internal/server"
+	"go-blog/migrations"
 	"log"
 	"os"
 	"os/signal"
@@ -33,6 +34,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to get DB connection: %v", err)
 	}
+
+	migrations.AutoMigrate(db)
 
 	defer sqlDb.Close()
 
