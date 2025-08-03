@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/alimoharrami/go-micro/pkg/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,7 +36,7 @@ func (l *AuthService) Login(ctx context.Context, input LoginInput) (*domain.User
 		return nil, nil, errors.New("invalid email or password")
 	}
 
-	token, err := Generate(user.ID)
+	token, err := auth.Generate(user.ID)
 	if err != nil {
 		return nil, nil, err
 	}

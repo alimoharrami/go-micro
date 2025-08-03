@@ -42,6 +42,8 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 
 	postController := handlers.NewPostController(PostService)
 
+	r.POST("/api/posts", auth.JWTAuthMiddleware(), postController.CreatePost)
+
 	// Define controllers and their routes
 	controllers := map[string]Controller{
 		"post": {
