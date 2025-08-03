@@ -30,26 +30,31 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 
-	r.LoadHTMLGlob("../../web/*")
+	r.LoadHTMLGlob("../web/*")
 
 	// Serve static files
 	r.Static("/static", "../../static")
 
+	// r.GET("/", auth.JWTAuthMiddleware(), func(c *gin.Context) {
+	// 	c.HTML(http.StatusOK, "index.html", gin.H{
+	// 		"title": "Welcome to Go Backend",
+	// 	})
+	// })
+
 	//initialize Repositories
-	postRepo := repository.NewPostRepository(db)
+	userRepo := repository.NewUserRepository(db)
 
-	PostService := service.NewPostService(postRepo)
+	AuthService := service.NewAuthService(userRepo)
 
-	postController := handlers.NewPostController(PostService)
+	AuthController := handlers.NewAuthController(AuthService)
+
+	// r.POST("/api/posts", auth.JWTAuthMiddleware(), postController.CreatePost)
 
 	// Define controllers and their routes
 	controllers := map[string]Controller{
-		"post": {
+		"auth": {
 			Routes: []Route{
-				{"GET", "/posts", postController.ListPosts},
-				{"PUT", "/posts/:id", postController.UpdatePost},
-				{"DELETE", "/posts/:id", postController.DeletePost},
-				{"GET", "/posts/:id", postController.GetPostByID},
+				{"POST", "/auth", AuthController.Login},
 			},
 		},
 	}

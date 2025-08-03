@@ -30,26 +30,24 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 
-	r.LoadHTMLGlob("../../web/*")
+	r.LoadHTMLGlob("../web/*")
 
 	// Serve static files
 	r.Static("/static", "../../static")
 
 	//initialize Repositories
-	postRepo := repository.NewPostRepository(db)
+	userRepo := repository.NewUserRepository(db)
 
-	PostService := service.NewPostService(postRepo)
+	userService := service.NewUserService(userRepo)
 
-	postController := handlers.NewPostController(PostService)
+	userController := handlers.NewUserController(userService)
 
 	// Define controllers and their routes
 	controllers := map[string]Controller{
-		"post": {
+		"user": {
 			Routes: []Route{
-				{"GET", "/posts", postController.ListPosts},
-				{"PUT", "/posts/:id", postController.UpdatePost},
-				{"DELETE", "/posts/:id", postController.DeletePost},
-				{"GET", "/posts/:id", postController.GetPostByID},
+				{"GET", "/users/:id", userController.GetUserByID},
+				{"POST", "/users", userController.CreateUser},
 			},
 		},
 	}

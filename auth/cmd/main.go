@@ -42,7 +42,7 @@ func main() {
 
 	r := gin.Default()
 
-	r.LoadHTMLGlob("../../web/*")
+	r.LoadHTMLGlob("../web/*")
 
 	router := routes.SetRouter(db)
 

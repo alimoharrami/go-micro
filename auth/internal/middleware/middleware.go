@@ -1,6 +1,7 @@
-package auth
+package middleware
 
 import (
+	"go-blog/internal/service"
 	"net/http"
 	"strings"
 
@@ -16,7 +17,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		claims, err := ParseJWT(tokenStr)
+		claims, err := service.ParseJWT(tokenStr)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing or invalid"})
 			return

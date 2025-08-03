@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-blog/internal/database"
 	"go-blog/internal/server"
+	"go-blog/migrations"
 	"log"
 	"os"
 	"os/signal"
@@ -34,6 +35,8 @@ func main() {
 		log.Fatalf("Failed to get DB connection: %v", err)
 	}
 
+	migrations.AutoMigrate(db)
+
 	defer sqlDb.Close()
 
 	//Initialize Redis
@@ -42,7 +45,7 @@ func main() {
 
 	r := gin.Default()
 
-	r.LoadHTMLGlob("../../web/*")
+	r.LoadHTMLGlob("../web/*")
 
 	router := routes.SetRouter(db)
 
