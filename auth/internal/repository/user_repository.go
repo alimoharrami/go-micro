@@ -1,9 +1,9 @@
 package repository
 
 import (
+	"auth/internal/domain"
 	"context"
 	"errors"
-	"go-blog/internal/domain"
 
 	"gorm.io/gorm"
 )

@@ -1,8 +1,8 @@
 package migrations
 
 import (
-	"go-blog/internal/domain"
 	"log"
+	"user/internal/domain"
 
 	"gorm.io/gorm"
 )

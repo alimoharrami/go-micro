@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"go-blog/internal/service"
 	"net/http"
 	"strconv"
+	"user/internal/service"
 
 	"github.com/gin-gonic/gin"
 )

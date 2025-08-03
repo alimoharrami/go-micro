@@ -1,11 +1,11 @@
 package service
 
 import (
+	"auth/internal/domain"
+	"auth/internal/repository"
 	"context"
 	"errors"
 	"fmt"
-	"go-blog/internal/domain"
-	"go-blog/internal/repository"
 
 	"golang.org/x/crypto/bcrypt"
 )

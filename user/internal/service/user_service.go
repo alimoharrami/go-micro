@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go-blog/internal/domain"
-	"go-blog/internal/repository"
+	"user/internal/domain"
+	"user/internal/repository"
 
 	"golang.org/x/crypto/bcrypt"
 )

@@ -1,8 +1,8 @@
 package database
 
 import (
+	"auth/internal/config"
 	"fmt"
-	"go-blog/internal/config"
 	"log"
 
 	"gorm.io/driver/postgres"

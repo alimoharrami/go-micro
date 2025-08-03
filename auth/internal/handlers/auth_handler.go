@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"go-blog/internal/service"
+	"auth/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -1,18 +1,18 @@
 package main
 
 import (
+	"auth/internal/database"
+	"auth/internal/server"
 	"context"
 	"fmt"
-	"go-blog/internal/database"
-	"go-blog/internal/server"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"go-blog/internal/config"
-	"go-blog/internal/routes"
+	"auth/internal/config"
+	"auth/internal/routes"
 
 	"github.com/gin-gonic/gin"
 )

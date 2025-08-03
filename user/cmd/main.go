@@ -3,17 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"go-blog/internal/database"
-	"go-blog/internal/server"
-	"go-blog/migrations"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+	"user/internal/database"
+	"user/internal/server"
+	"user/migrations"
 
-	"go-blog/internal/config"
-	"go-blog/internal/routes"
+	"user/internal/config"
+	"user/internal/routes"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"go-blog/internal/handlers"
-	"go-blog/internal/middleware"
-	"go-blog/internal/repository"
-	"go-blog/internal/service"
+	"auth/internal/handlers"
+	"auth/internal/middleware"
+	"auth/internal/repository"
+	"auth/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
