@@ -43,8 +43,15 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 
 	//initialize Repositories
 	userRepo := repository.NewUserRepository(db)
+	roleRepo := repository.NewRoleRepository(db)
+	permissionRepo := repository.NewPermissionRepository(db)
+	rolePermissionRepo := repository.NewRolePermissionRepository(db)
 
-	AuthService := service.NewAuthService(userRepo)
+	roleServ := service.NewRoleService(roleRepo)
+	permissionServ := service.NewPermissionService(permissionRepo)
+	rolePermissionServ := service.NewRolePermissionService(rolePermissionRepo)
+
+	AuthService := service.NewAuthService(userRepo, rolePermissionServ, roleServ, permissionServ)
 
 	AuthController := handlers.NewAuthController(AuthService)
 

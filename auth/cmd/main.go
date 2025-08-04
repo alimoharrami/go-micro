@@ -3,6 +3,7 @@ package main
 import (
 	"auth/internal/database"
 	"auth/internal/server"
+	"auth/migrations"
 	"context"
 	"fmt"
 	"log"
@@ -33,6 +34,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to get DB connection: %v", err)
 	}
+
+	migrations.AutoMigrate(db)
 
 	defer sqlDb.Close()
 

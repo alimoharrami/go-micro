@@ -12,11 +12,24 @@ import (
 )
 
 type AuthService struct {
-	repo *repository.UserRepository
+	repo                  *repository.UserRepository
+	rolePermissionService *RolePermissionService
+	roleService           *RoleService
+	permissionService     *PermissionService
 }
 
-func NewAuthService(repo *repository.UserRepository) *AuthService {
-	return &AuthService{repo: repo}
+func NewAuthService(
+	repo *repository.UserRepository,
+	rolePermissionService *RolePermissionService,
+	roleService *RoleService,
+	permissionService *PermissionService,
+) *AuthService {
+	return &AuthService{
+		repo:                  repo,
+		rolePermissionService: rolePermissionService,
+		roleService:           roleService,
+		permissionService:     permissionService,
+	}
 }
 
 // CreateUserInput defines user creation fields.
@@ -36,7 +49,22 @@ func (l *AuthService) Login(ctx context.Context, input LoginInput) (*domain.User
 		return nil, nil, errors.New("invalid email or password")
 	}
 
-	token, err := auth.Generate(user.ID)
+	role, err := l.roleService.GetByID(ctx, user.RoleID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	permissions, err := l.rolePermissionService.ListPermissionsByRole(ctx, role.ID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var permissionNames []string
+	for _, p := range permissions {
+		permissionNames = append(permissionNames, p.Key)
+	}
+
+	token, err := auth.Generate(user.ID, []string{role.Name}, permissionNames)
 	if err != nil {
 		return nil, nil, err
 	}
