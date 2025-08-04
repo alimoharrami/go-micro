@@ -10,13 +10,17 @@ import (
 var jwtSecret = []byte("dddddddd")
 
 type CustomClaims struct {
-	UserID uint `json:"user_id"`
+	UserID      uint     `json:"user_id"`
+	Roles       []string `json:"roles"`
+	Permissions []string `json:"permissions"`
 	jwt.RegisteredClaims
 }
 
-func Generate(userID uint) (string, error) {
+func Generate(userID uint, roles, permissions []string) (string, error) {
 	claims := CustomClaims{
-		UserID: userID,
+		UserID:      userID,
+		Roles:       roles,
+		Permissions: permissions,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
