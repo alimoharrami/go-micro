@@ -6,6 +6,7 @@ import (
 	"go-blog/internal/repository"
 	"go-blog/internal/service"
 
+	"github.com/alimoharrami/go-micro/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
