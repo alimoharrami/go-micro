@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func authMiddleware() gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
@@ -29,7 +29,7 @@ func authMiddleware() gin.HandlerFunc {
 	}
 }
 
-func requirePermission(permission string) gin.HandlerFunc {
+func RequirePermission(permission string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		permIface, exists := c.Get("permissions")
 		if !exists {
