@@ -6,6 +6,7 @@ import (
 	"go-blog/internal/repository"
 	"go-blog/internal/service"
 
+	"github.com/alimoharrami/go-micro/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -42,7 +43,7 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 
 	postController := handlers.NewPostController(PostService)
 
-	r.POST("/api/posts", auth.authMiddleware(), auth.requirePermission("post:create"), postController.CreatePost)
+	r.POST("/api/posts", auth.AuthMiddleware(), auth.RequirePermission("post:create"), postController.CreatePost)
 
 	// Define controllers and their routes
 	controllers := map[string]Controller{
