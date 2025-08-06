@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alimoharrami/go-micro/pkg/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -64,10 +63,11 @@ func (l *AuthService) Login(ctx context.Context, input LoginInput) (*domain.User
 		permissionNames = append(permissionNames, p.Key)
 	}
 
-	token, err := auth.Generate(user.ID, []string{role.Name}, permissionNames)
-	if err != nil {
-		return nil, nil, err
-	}
+	token := "mocked_token" // Replace with actual token generation logic
+	// token, err := auth.Generate(user.ID, []string{role.Name}, permissionNames)
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
 
 	return user, &token, nil
 }
