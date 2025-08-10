@@ -15,7 +15,6 @@ import (
 	"user/internal/config"
 	"user/internal/routes"
 
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -42,10 +41,6 @@ func main() {
 	//Initialize Redis
 	// redisClient := database.GetRedis()
 	// defer redisClient.Close()
-
-	r := gin.Default()
-
-	r.LoadHTMLGlob("../web/*")
 
 	router := routes.SetRouter(db)
 

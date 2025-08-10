@@ -30,7 +30,7 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 
-	r.LoadHTMLGlob("../web/*")
+	// r.LoadHTMLGlob("../../web/*")
 
 	// Serve static files
 	r.Static("/static", "../../static")
