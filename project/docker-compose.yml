@@ -8,7 +8,7 @@ services:
       dockerfile: ./../auth/auth.dockerfile
     restart: always
     ports:
-      - "8080:8080"
+      - "8082:8080"
     deploy:
       mode: replicated
       replicas: 1
@@ -22,6 +22,19 @@ services:
     restart: always
     ports:
       - "8081:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - laravel
+
+  blog-service:
+    build:
+      context: ./../blog
+      dockerfile: ./../blog/blog.dockerfile
+    restart: always
+    ports:
+      - "8083:8080"
     deploy:
       mode: replicated
       replicas: 1

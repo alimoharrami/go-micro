@@ -30,8 +30,6 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 
-	// r.LoadHTMLGlob("../../web/*")
-
 	// Serve static files
 	r.Static("/static", "../../static")
 
@@ -54,8 +52,6 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	AuthService := service.NewAuthService(userRepo, rolePermissionServ, roleServ, permissionServ)
 
 	AuthController := handlers.NewAuthController(AuthService)
-
-	// r.POST("/api/posts", auth.JWTAuthMiddleware(), postController.CreatePost)
 
 	// Define controllers and their routes
 	controllers := map[string]Controller{

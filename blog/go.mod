@@ -3,7 +3,7 @@ module go-blog
 go 1.23.3
 
 require (
-	github.com/alimoharrami/go-micro/pkg v0.0.0-20250804095235-38678a9e28f8 // indirect
+	github.com/alimoharrami/go-micro/pkg v0.0.0-20250810075405-8e7edfaa10fc // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
