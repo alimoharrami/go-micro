@@ -9,13 +9,21 @@ import (
 	"syscall"
 	"time"
 	"user/internal/database"
-	"user/internal/server"
 	"user/migrations"
 
 	"user/internal/config"
 	"user/internal/routes"
+	"user/internal/server"
 
+	"user/external/protos/userpb"
+
+	mygrpc "github.com/alimoharrami/go-micro/pkg/grpc"
+	"google.golang.org/grpc"
 )
+
+type userServer struct {
+	userpb.UnimplementedUserServiceServer
+}
 
 func main() {
 	// Load configuration
@@ -25,6 +33,13 @@ func main() {
 	}
 
 	log.Println(cfg.Server.Port)
+
+	// Initialize gRPC server
+	serverGrpc := mygrpc.NewServer(func(s *grpc.Server) {
+		userpb.RegisterUserServiceServer(s, &userServer{})
+	})
+
+	serverGrpc.Start(":50051")
 
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
@@ -72,4 +87,11 @@ func main() {
 	if err := srv.Start(port); err != nil {
 		log.Fatalf("Failed to start service: %v", err)
 	}
+}
+
+func (s *userServer) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*userpb.GetUserResponse, error) {
+	return &userpb.GetUserResponse{
+		Id:   req.Id,
+		Name: "Ali Moharrami",
+	}, nil
 }
