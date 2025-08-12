@@ -41,6 +41,19 @@ services:
     networks:
       - laravel
 
+  notification-service:
+    build:
+      context: ./../notification
+      dockerfile: ./../notification/notification.dockerfile
+    restart: always
+    ports:
+      - "8084:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - laravel
+
   db_postgres:
     image: postgres
     container_name: postgres
@@ -74,6 +87,9 @@ services:
     image: 'rabbitmq:3.9-alpine'
     ports:
       - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     deploy:
       mode: replicated
       replicas: 1
