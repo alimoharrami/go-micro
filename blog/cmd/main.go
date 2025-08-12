@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-blog/internal/database"
+	"go-blog/internal/helpers"
 	"go-blog/internal/server"
 	"go-blog/migrations"
 	"log"
@@ -15,9 +16,6 @@ import (
 	"go-blog/internal/config"
 	"go-blog/internal/routes"
 
-	"go-blog/external/protos/userpb"
-
-	"github.com/alimoharrami/go-micro/pkg/grpc"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,19 +28,7 @@ func main() {
 
 	log.Println(cfg.Server.Port)
 
-	conn := grpc.NewClientConn("user-service:50051")
-	defer conn.Close()
-
-	client := userpb.NewUserServiceClient(conn)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	resp, err := client.GetUser(ctx, &userpb.GetUserRequest{Id: "123"})
-	if err != nil {
-		log.Fatalf("could not get user: %v", err)
-	}
-	log.Printf("User: %s - %s", resp.Id, resp.Name)
+	helpers.InitGRPC()
 
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
