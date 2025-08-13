@@ -15,6 +15,8 @@ import (
 	"user/internal/helpers"
 	"user/internal/routes"
 	"user/internal/server"
+
+	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 )
 
 func main() {
@@ -24,10 +26,24 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	helpers.ConnectRabbitMQ()
-
 	log.Println(cfg.Server.Port)
 
+	ctx := context.Background()
+
+	rabbitCfg := rabbitmq.RabbitMQConfig{
+		Host:     "amqp",
+		Port:     5672,
+		User:     "guest",
+		Password: "guest",
+	}
+	rabbitconn, err := rabbitmq.NewRabbitMQConn(&rabbitCfg, ctx)
+
+	if err != nil {
+		log.Printf("Error connecting rabbitmq %v:", err)
+	}
+
+	rabbitPublisher := rabbitmq.NewPublisher(rabbitconn)
+	rabbitPublisher.PublishMessage("notification", "this is published message")
 	helpers.InitilaizeGRPC()
 
 	// init dbs

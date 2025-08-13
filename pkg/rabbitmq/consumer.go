@@ -8,14 +8,15 @@ import (
 
 //go:generate mockery --name IConsumer
 type IConsumer interface {
-	ConsumeMessage(queue string, msg string) (*string, error)
+	ConsumeMessage(queue string) (any, error)
 }
 
 type Consumer struct {
 	conn *amqp091.Connection
 }
 
-func (c Consumer) ConsumeMessage(queue string, msg string) (*string, error) {
+// code changed
+func (c Consumer) ConsumeMessage(queue string) (any, error) {
 	ch, err := c.conn.Channel()
 	if err != nil {
 		log.Printf("Error in opening channel to consume message")
@@ -50,13 +51,7 @@ func (c Consumer) ConsumeMessage(queue string, msg string) (*string, error) {
 		return nil, err
 	}
 
-	message := ""
-
-	for msg := range msgs {
-		message += string(msg.Body)
-	}
-
-	return &message, nil
+	return msgs, nil
 }
 
 func NewConsumer(conn *amqp091.Connection) IConsumer {
