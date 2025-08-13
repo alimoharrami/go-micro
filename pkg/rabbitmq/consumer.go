@@ -15,7 +15,6 @@ type Consumer struct {
 	conn *amqp091.Connection
 }
 
-// code changed
 func (c Consumer) ConsumeMessage(queue string) (any, error) {
 	ch, err := c.conn.Channel()
 	if err != nil {

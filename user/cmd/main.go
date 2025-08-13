@@ -31,7 +31,7 @@ func main() {
 	ctx := context.Background()
 
 	rabbitCfg := rabbitmq.RabbitMQConfig{
-		Host:     "amqp",
+		Host:     "rabbitmq",
 		Port:     5672,
 		User:     "guest",
 		Password: "guest",

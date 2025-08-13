@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"notification/internal/database"
-	"notification/internal/helpers"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,6 +14,7 @@ import (
 	"notification/internal/routes"
 	"notification/internal/server"
 
+	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -31,7 +31,29 @@ func main() {
 
 	log.Println(cfg.Server.Port)
 
-	helpers.ConnectRabbitMQ()
+	ctx := context.Background()
+
+	rabbitCfg := rabbitmq.RabbitMQConfig{
+		Host:     "rabbitmq",
+		Port:     5672,
+		User:     "guest",
+		Password: "guest",
+	}
+	rabbitconn, err := rabbitmq.NewRabbitMQConn(&rabbitCfg, ctx)
+
+	if err != nil {
+		log.Printf("Error connecting rabbitmq %v:", err)
+	}
+
+	rabbitConsumer := rabbitmq.NewConsumer(rabbitconn)
+	msgs, err := rabbitConsumer.ConsumeMessage("notification")
+
+	if err != nil {
+		log.Printf("error fetching rabbit messges %v", err)
+	}
+
+	log.Println("message should be belove")
+	log.Println(msgs)
 
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
