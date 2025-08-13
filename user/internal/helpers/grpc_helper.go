@@ -20,9 +20,11 @@ func (s *userServer) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*
 }
 
 func InitilaizeGRPC() {
-	serverGrpc := mygrpc.NewServer(func(s *grpc.Server) {
-		userpb.RegisterUserServiceServer(s, &userServer{})
-	})
+	go func() {
+		serverGrpc := mygrpc.NewServer(func(s *grpc.Server) {
+			userpb.RegisterUserServiceServer(s, &userServer{})
+		})
 
-	serverGrpc.Start(":50051")
+		serverGrpc.Start(":50051")
+	}()
 }

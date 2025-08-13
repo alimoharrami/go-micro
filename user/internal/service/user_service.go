@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"user/internal/domain"
 	"user/internal/repository"
 
@@ -86,6 +87,26 @@ func (s *UserService) Update(ctx context.Context, id uint, input UpdateUserInput
 	}
 
 	return user, nil
+}
+
+func (s *UserService) GetUsers(ctx context.Context, page, limit int) (map[string]interface{}, error) {
+	offset := (page - 1) * limit
+	users, total, err := s.repo.List(ctx, offset, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := map[string]interface{}{
+		"data": users,
+		"pagination": map[string]interface{}{
+			"total": total,
+			"page":  page,
+			"limit": limit,
+			"pages": int(math.Ceil(float64(total) / float64(limit))),
+		},
+	}
+	return result, nil
 }
 
 func hashPassword(password string) (string, error) {

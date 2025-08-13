@@ -50,8 +50,16 @@ func (r *UserRepository) Delete(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Delete(&domain.User{}, id).Error
 }
 
-func (r *UserRepository) List(ctx context.Context, offset, limit int) ([]domain.User, error) {
+func (r *UserRepository) List(ctx context.Context, offset, limit int) ([]domain.User, int64, error) {
 	var users []domain.User
+	var total int64
+
+	if err := r.db.Model(&domain.User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
 	err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&users).Error
-	return users, err
+	if err != nil {
+		return nil, 0, err
+	}
+	return users, total, err
 }

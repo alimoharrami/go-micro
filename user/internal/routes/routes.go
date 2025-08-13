@@ -46,6 +46,8 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 			Routes: []Route{
 				{"GET", "/users/:id", userController.GetUserByID},
 				{"POST", "/users", userController.CreateUser},
+				{"GET", "/users", userController.ListUsers},
+				{"PUT", "/users/:id", userController.UpdateUser},
 			},
 		},
 	}

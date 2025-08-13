@@ -12,7 +12,6 @@ import (
 	"user/migrations"
 
 	"user/internal/config"
-	"user/internal/helpers"
 	"user/internal/routes"
 	"user/internal/server"
 
@@ -44,12 +43,13 @@ func main() {
 
 	rabbitPublisher := rabbitmq.NewPublisher(rabbitconn)
 	rabbitPublisher.PublishMessage("notification", "this is published message")
-	helpers.InitilaizeGRPC()
+	// helpers.InitilaizeGRPC()
 
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
 	db := database.GetPostgres()
 	sqlDb, err := db.DB()
+
 	if err != nil {
 		log.Fatalf("Failed to get DB connection: %v", err)
 	}
@@ -62,6 +62,7 @@ func main() {
 	// redisClient := database.GetRedis()
 	// defer redisClient.Close()
 
+	log.Println("its in creating router")
 	router := routes.SetRouter(db)
 
 	srv := server.NewServer(router)
