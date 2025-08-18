@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-blog/internal/handlers"
+	"go-blog/internal/helpers"
 	"go-blog/internal/middleware"
 	"go-blog/internal/repository"
 	"go-blog/internal/service"
@@ -36,12 +37,15 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	// Serve static files
 	r.Static("/static", "../../static")
 
+	//grpc service
+	client := helpers.InitGRPC()
+
 	//initialize Repositories
 	postRepo := repository.NewPostRepository(db)
 
 	PostService := service.NewPostService(postRepo)
 
-	postController := handlers.NewPostController(PostService)
+	postController := handlers.NewPostController(PostService, client)
 
 	r.POST("/api/posts", auth.AuthMiddleware(), auth.RequirePermission("post:create"), postController.CreatePost)
 
@@ -49,10 +53,10 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	controllers := map[string]Controller{
 		"post": {
 			Routes: []Route{
+				{"GET", "/posts/:id", postController.GetPostByID},
 				{"GET", "/posts", postController.ListPosts},
 				{"PUT", "/posts/:id", postController.UpdatePost},
 				{"DELETE", "/posts/:id", postController.DeletePost},
-				{"GET", "/posts/:id", postController.GetPostByID},
 			},
 		},
 	}

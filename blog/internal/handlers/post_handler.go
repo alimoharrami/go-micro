@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"go-blog/external/protos/userpb"
 	"go-blog/internal/service"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -9,11 +11,12 @@ import (
 )
 
 type PostController struct {
-	service *service.PostService
+	service    *service.PostService
+	userClient userpb.UserServiceClient
 }
 
-func NewPostController(service *service.PostService) *PostController {
-	return &PostController{service}
+func NewPostController(service *service.PostService, userClient userpb.UserServiceClient) *PostController {
+	return &PostController{service, userClient}
 }
 
 func (uc *PostController) GetPostByID(c *gin.Context) {
@@ -23,7 +26,20 @@ func (uc *PostController) GetPostByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
-	c.JSON(http.StatusOK, post)
+
+	log.Printf("here")
+	resp, err := uc.userClient.GetUser(c, &userpb.GetUserRequest{Id: c.Param("id")})
+	if err != nil {
+		log.Fatalf("could not get user: %v", err)
+	}
+	log.Printf("here1")
+
+	result := map[string]interface{}{
+		"post": post,
+		"user": resp,
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 func (uc *PostController) CreatePost(c *gin.Context) {
