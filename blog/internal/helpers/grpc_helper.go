@@ -18,7 +18,7 @@ func InitGRPC() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	resp, err := client.GetUser(ctx, &userpb.GetUserRequest{Id: "123"})
+	resp, err := client.GetUser(ctx, &userpb.GetUserRequest{Id: "1"})
 	if err != nil {
 		log.Fatalf("could not get user: %v", err)
 	}

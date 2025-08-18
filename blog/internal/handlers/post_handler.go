@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"go-blog/internal/domain"
 	"go-blog/internal/service"
 	"net/http"
 	"strconv"
@@ -46,14 +45,23 @@ func (uc *PostController) CreatePost(c *gin.Context) {
 }
 
 func (uc *PostController) ListPosts(c *gin.Context) {
-	var posts []domain.Post
-	posts, err := uc.service.List(c)
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	result, err := uc.service.List(c, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusAccepted, posts)
+	c.JSON(http.StatusAccepted, result)
 }
 
 func (uc *PostController) DeletePost(c *gin.Context) {
@@ -83,3 +91,5 @@ func (uc *PostController) UpdatePost(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, post)
 }
+
+//todo get posts paginate

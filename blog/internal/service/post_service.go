@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go-blog/internal/domain"
 	"go-blog/internal/repository"
+	"math"
 )
 
 type PostService struct {
@@ -73,13 +74,25 @@ func (s *PostService) Update(ctx context.Context, id uint, input UpdatePostInput
 	return post, nil
 }
 
-func (s *PostService) List(ctx context.Context) ([]domain.Post, error) {
-	posts, err := s.repo.List(ctx, 1, 10)
+func (s *PostService) List(ctx context.Context, page, limit int) (map[string]interface{}, error) {
+	offset := (page - 1) * limit
+	posts, total, err := s.repo.List(ctx, offset, limit)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch posts: %w", err)
 	}
 
-	return posts, nil
+	result := map[string]interface{}{
+		"data": posts,
+		"pagination": map[string]interface{}{
+			"total": total,
+			"page":  page,
+			"limit": limit,
+			"pages": int(math.Ceil(float64(total) / float64(limit))),
+		},
+	}
+
+	return result, nil
 }
 
 func (s *PostService) Delete(ctx context.Context, id uint) error {
@@ -90,3 +103,5 @@ func (s *PostService) Delete(ctx context.Context, id uint) error {
 
 	return nil
 }
+
+//todo get posts paginate

@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 	"user/internal/database"
+	"user/internal/helpers"
 	"user/migrations"
 
 	"user/internal/config"
@@ -43,7 +44,6 @@ func main() {
 
 	rabbitPublisher := rabbitmq.NewPublisher(rabbitconn)
 	rabbitPublisher.PublishMessage("notification", "this is published message")
-	// helpers.InitilaizeGRPC()
 
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
@@ -61,6 +61,8 @@ func main() {
 	//Initialize Redis
 	// redisClient := database.GetRedis()
 	// defer redisClient.Close()
+
+	helpers.InitilaizeGRPC(db)
 
 	log.Println("its in creating router")
 	router := routes.SetRouter(db)

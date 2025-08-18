@@ -39,10 +39,17 @@ func (r *PostRepository) Delete(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Delete(&domain.Post{}, id).Error
 }
 
-func (r *PostRepository) List(ctx context.Context, offset, limit int) ([]domain.Post, error) {
+func (r *PostRepository) List(ctx context.Context, offset, limit int) ([]domain.Post, int64, error) {
 	var posts []domain.Post
-	err := r.db.WithContext(ctx).Find(&posts).Error
-	// .Offset(offset).Limit(limit)
+	var total int64
 
-	return posts, err
+	if err := r.db.Model(&domain.Post{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&posts).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	return posts, total, err
 }
