@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"notification/internal/database"
+	"notification/internal/helpers"
 	"os"
 	"os/signal"
 	"syscall"
@@ -43,17 +44,10 @@ func main() {
 
 	if err != nil {
 		log.Printf("Error connecting rabbitmq %v:", err)
+	} else {
+		helpers.ConsumeMessage(rabbitconn, "notification")
+
 	}
-
-	rabbitConsumer := rabbitmq.NewConsumer(rabbitconn)
-	msgs, err := rabbitConsumer.ConsumeMessage("notification")
-
-	if err != nil {
-		log.Printf("error fetching rabbit messges %v", err)
-	}
-
-	log.Println("message should be belove")
-	log.Println(msgs)
 
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))

@@ -19,6 +19,11 @@ import (
 	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 )
 
+type Notification struct {
+	UserID  int    `json:"user_id"`
+	Message string `json:"message"`
+}
+
 func main() {
 	// Load configuration
 	cfg, err := config.LoadConfig()
@@ -42,8 +47,17 @@ func main() {
 		log.Printf("Error connecting rabbitmq %v:", err)
 	}
 
+	payload := Notification{
+		UserID:  1,
+		Message: "this is message",
+	}
+
+	if err != nil {
+		log.Fatalf("failed to marshal: %v", err)
+	}
+
 	rabbitPublisher := rabbitmq.NewPublisher(rabbitconn)
-	rabbitPublisher.PublishMessage("notification", "this is published message")
+	rabbitPublisher.PublishMessage("notification", payload)
 
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
