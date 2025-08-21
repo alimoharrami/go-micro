@@ -1,9 +1,7 @@
 package routes
 
 import (
-	"notification/internal/helpers"
 	"notification/internal/middleware"
-	"notification/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -31,11 +29,6 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 
 	// Serve static files
 	r.Static("/static", "../../static")
-
-	//grpc service
-	client := helpers.InitGRPC()
-
-	service.NewEmailService(client)
 
 	return r
 }

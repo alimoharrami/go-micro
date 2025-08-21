@@ -19,9 +19,14 @@ import (
 	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 )
 
-type Notification struct {
+type NotificationData struct {
 	UserID  int    `json:"user_id"`
 	Message string `json:"message"`
+}
+
+type Notification struct {
+	Type string           `json:"type"`
+	Data NotificationData `json:"data"`
 }
 
 func main() {
@@ -47,9 +52,13 @@ func main() {
 		log.Printf("Error connecting rabbitmq %v:", err)
 	}
 
-	payload := Notification{
+	payloadData := NotificationData{
 		UserID:  1,
 		Message: "this is message",
+	}
+	payload := Notification{
+		Type: "user_notif",
+		Data: payloadData,
 	}
 
 	if err != nil {

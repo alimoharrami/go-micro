@@ -6,6 +6,7 @@ import (
 	"log"
 	"notification/internal/database"
 	"notification/internal/helpers"
+	"notification/internal/service"
 	"os"
 	"os/signal"
 	"syscall"
@@ -34,21 +35,6 @@ func main() {
 
 	ctx := context.Background()
 
-	rabbitCfg := rabbitmq.RabbitMQConfig{
-		Host:     "rabbitmq",
-		Port:     5672,
-		User:     "guest",
-		Password: "guest",
-	}
-	rabbitconn, err := rabbitmq.NewRabbitMQConn(&rabbitCfg, ctx)
-
-	if err != nil {
-		log.Printf("Error connecting rabbitmq %v:", err)
-	} else {
-		helpers.ConsumeMessage(rabbitconn, "notification")
-
-	}
-
 	// init dbs
 	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
 	db := database.GetPostgres()
@@ -59,6 +45,27 @@ func main() {
 
 	defer sqlDb.Close()
 
+	//grpc service
+	client := helpers.InitGRPC()
+
+	EmailService := service.NewEmailService(client)
+
+	rabbitCfg := rabbitmq.RabbitMQConfig{
+		Host:     "rabbitmq",
+		Port:     5672,
+		User:     "guest",
+		Password: "guest",
+	}
+	rabbitconn, err := rabbitmq.NewRabbitMQConn(&rabbitCfg, ctx)
+
+	rabbitConsumer := helpers.NewRabbitConsumer(EmailService)
+
+	if err != nil {
+		log.Printf("Error connecting rabbitmq %v:", err)
+	} else {
+		rabbitConsumer.ConsumeMessage(ctx, rabbitconn, "notification")
+
+	}
 	//Initialize Redis
 	// redisClient := database.GetRedis()
 	// defer redisClient.Close()
