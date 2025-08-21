@@ -6,6 +6,7 @@ import (
 	"log"
 	"notification/internal/database"
 	"notification/internal/helpers"
+	"notification/internal/migrations"
 	"notification/internal/service"
 	"os"
 	"os/signal"
@@ -42,6 +43,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to get DB connection: %v", err)
 	}
+
+	migrations.AutoMigrate(db)
 
 	defer sqlDb.Close()
 
