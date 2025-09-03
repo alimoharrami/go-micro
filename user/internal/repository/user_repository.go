@@ -63,3 +63,18 @@ func (r *UserRepository) List(ctx context.Context, offset, limit int) ([]domain.
 	}
 	return users, total, err
 }
+
+func (r *UserRepository) GetUserListByIDs(ctx context.Context, userIDs []uint) ([]domain.User, error) {
+	var users []domain.User
+
+	if len(userIDs) == 0 {
+		return users, nil // no IDs → no users
+	}
+
+	err := r.db.Where("id IN ?", userIDs).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

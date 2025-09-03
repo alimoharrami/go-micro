@@ -20,5 +20,5 @@ func (s *EmailService) SendEmailUserID(c context.Context, UserID int, message st
 	if err != nil {
 		log.Printf("error in notificaiotn grpc %v", err)
 	}
-	log.Println(message + " " + user.Name)
+	log.Println(message + " " + user.User.Name)
 }

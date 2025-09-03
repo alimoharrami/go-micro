@@ -109,6 +109,10 @@ func (s *UserService) GetUsers(ctx context.Context, page, limit int) (map[string
 	return result, nil
 }
 
+func (s *UserService) GetUserListByIDs(ctx context.Context, userIDs []uint) ([]domain.User, error) {
+	return s.repo.GetUserListByIDs(ctx, userIDs)
+}
+
 func hashPassword(password string) (string, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

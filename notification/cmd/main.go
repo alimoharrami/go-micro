@@ -73,7 +73,7 @@ func main() {
 	// redisClient := database.GetRedis()
 	// defer redisClient.Close()
 
-	router := routes.SetRouter(db)
+	router := routes.SetRouter(db, client)
 
 	srv := server.NewServer(router)
 
