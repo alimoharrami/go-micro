@@ -1,6 +1,8 @@
 package database
 
 import (
+	"log"
+
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -24,6 +26,22 @@ func InitDatabases(pgConfig PostgresConfig, redisConfig RedisConfig) error {
 	return nil
 }
 
+func InitPostgres(pgConfig PostgresConfig) *gorm.DB {
+	var err error
+	counter := 0
+	for {
+		pgDB, err = NewPostgresConnection(pgConfig)
+		if err != nil {
+			log.Printf("error in initialize postgres %v", err)
+		} else {
+			return pgDB
+		}
+		if counter > 5 {
+			return nil
+		}
+	}
+
+}
 func GetPostgres() *gorm.DB {
 	return pgDB
 }

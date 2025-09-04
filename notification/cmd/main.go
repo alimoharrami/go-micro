@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"notification/external/protos/userpb"
 	"notification/internal/database"
+	"notification/internal/handlers"
 	"notification/internal/helpers"
 	"notification/internal/migrations"
+	"notification/internal/repository"
 	"notification/internal/service"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 
 	"notification/internal/config"
@@ -18,89 +20,107 @@ import (
 	"notification/internal/server"
 
 	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
+	"github.com/gin-gonic/gin"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 type Config struct {
 	Rabbit *amqp.Connection
 }
 
-func main() {
-	// Load configuration
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
+type AppParams struct {
+	fx.In
 
-	log.Println(cfg.Server.Port)
+	Lifecycle  fx.Lifecycle
+	Cfg        *config.Config
+	DB         *gorm.DB
+	Client     userpb.UserServiceClient
+	EmailSvc   *service.EmailService
+	RabbitCfg  rabbitmq.RabbitMQConfig
+	RabbitCon  *helpers.RabbitConsumer
+	RabbitConn *amqp.Connection
+	Router     *gin.Engine
+}
 
-	ctx := context.Background()
-
-	// init dbs
-	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
-	db := database.GetPostgres()
-	sqlDb, err := db.DB()
-	if err != nil {
-		log.Fatalf("Failed to get DB connection: %v", err)
-	}
-
-	migrations.AutoMigrate(db)
-
-	defer sqlDb.Close()
-
-	//grpc service
-	client := helpers.InitGRPC()
-
-	EmailService := service.NewEmailService(client)
-
-	rabbitCfg := rabbitmq.RabbitMQConfig{
+func NewRabbitConfig(cfg *config.Config) rabbitmq.RabbitMQConfig {
+	return rabbitmq.RabbitMQConfig{
 		Host:     "rabbitmq",
 		Port:     5672,
 		User:     "guest",
 		Password: "guest",
 	}
-	rabbitconn, err := rabbitmq.NewRabbitMQConn(&rabbitCfg, ctx)
+}
 
-	rabbitConsumer := helpers.NewRabbitConsumer(EmailService)
-
-	if err != nil {
-		log.Printf("Error connecting rabbitmq %v:", err)
-	} else {
-		rabbitConsumer.ConsumeMessage(ctx, rabbitconn, "notification")
-
+func NewRabbitConn(cfg rabbitmq.RabbitMQConfig, lc fx.Lifecycle) *amqp.Connection {
+	ctx := context.Background()
+	counter := 0
+	for {
+		conn, err := rabbitmq.NewRabbitMQConn(&cfg, ctx)
+		if err != nil {
+			counter++
+		} else {
+			return conn
+		}
+		if counter > 5 {
+			lc.Append(fx.Hook{
+				OnStop: func(ctx context.Context) error {
+					return conn.Close()
+				},
+			})
+			return nil
+		}
 	}
+}
+
+func StartApp(p AppParams) {
+
+	migrations.AutoMigrate(p.DB)
+
+	connection := p.RabbitConn
+
+	p.RabbitCon.ConsumeMessage(context.Background(), connection, "notification")
+
 	//Initialize Redis
 	// redisClient := database.GetRedis()
 	// defer redisClient.Close()
 
-	router := routes.SetRouter(db, client)
+	srv := server.NewServer(p.Router)
+	port := p.Cfg.Server.Port
 
-	srv := server.NewServer(router)
-
-	// Handle graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		<-quit
-		fmt.Println("Shutting down server...")
-
-		// Create shutdown context with a timeout
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		// Shutdown services gracefully
-		if err := srv.Shutdown(ctx); err != nil {
-			log.Fatalf("Server shutdown failed: %v", err)
+		if err := srv.Start(port); err != nil {
+			log.Fatalf("Failed to start service: %v", err)
 		}
-
-		// redisClient.Close()
-		sqlDb.Close()
-		fmt.Println("Server gracefully stopped")
 	}()
+	// Graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	fmt.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	srv.Shutdown(ctx)
+	fmt.Println("Server gracefully stopped")
+}
 
-	//start server
-	port := cfg.Server.Port
-	if err := srv.Start(port); err != nil {
-		log.Fatalf("Failed to start service: %v", err)
-	}
+func main() {
+	fx.New(
+		fx.Provide(
+			config.LoadConfig,
+			database.NewPostgresConfig,
+			database.InitPostgres,
+			helpers.InitGRPC,
+			service.NewEmailService,
+			helpers.NewRabbitConsumer,
+			NewRabbitConfig,
+			NewRabbitConn,
+			repository.NewChannelRepository,
+			service.NewChannelService,
+			handlers.NewNotificationController,
+			routes.SetRouter,
+		),
+		fx.Invoke(StartApp),
+	).Run()
 }

@@ -4,8 +4,6 @@ import (
 	"notification/external/protos/userpb"
 	"notification/internal/handlers"
 	"notification/internal/middleware"
-	"notification/internal/repository"
-	"notification/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -24,7 +22,11 @@ type Controller struct {
 }
 
 // SetupRouter dynamically sets up routes
-func SetRouter(db *gorm.DB, client userpb.UserServiceClient) *gin.Engine {
+func SetRouter(db *gorm.DB,
+	client userpb.UserServiceClient,
+	notificationHandler *handlers.NotificationController,
+
+) *gin.Engine {
 	gin.SetMode("release")
 
 	r := gin.Default()
@@ -32,19 +34,14 @@ func SetRouter(db *gorm.DB, client userpb.UserServiceClient) *gin.Engine {
 	r.Use(middleware.Logger())
 	r.Static("/static", "../../static")
 
-	channelRepo := repository.NewChannelRepository(db)
-
-	channelService := service.NewChannelService(channelRepo, client)
-
-	notificationHand := handlers.NewNotificationController(channelService)
 	// Serve static files
 
 	controllers := map[string]Controller{
 		"notification": {
 			Routes: []Route{
-				{"POST", "/notification", notificationHand.Create},
-				{"POST", "/notification/subscribe", notificationHand.Subscribe},
-				{"POST", "/notification/send", notificationHand.SendNotif},
+				{"POST", "/notification", notificationHandler.Create},
+				{"POST", "/notification/subscribe", notificationHandler.Subscribe},
+				{"POST", "/notification/send", notificationHandler.SendNotif},
 			},
 		},
 	}
