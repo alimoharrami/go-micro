@@ -25,6 +25,7 @@ type Controller struct {
 func SetRouter(db *gorm.DB,
 	client userpb.UserServiceClient,
 	notificationHandler *handlers.NotificationController,
+	notificationBroadCastHandler *handlers.NotificationBroadcastHandler,
 
 ) *gin.Engine {
 	gin.SetMode("release")
@@ -35,6 +36,8 @@ func SetRouter(db *gorm.DB,
 	r.Static("/static", "../../static")
 
 	// Serve static files
+	r.GET("/ws", notificationBroadCastHandler.WebSocket)
+	r.POST("/notification/broadcast", notificationBroadCastHandler.HandlePostNotification)
 
 	controllers := map[string]Controller{
 		"notification": {

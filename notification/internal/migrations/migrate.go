@@ -11,6 +11,7 @@ func AutoMigrate(db *gorm.DB) {
 	err := db.AutoMigrate(
 		&domain.Channel{},
 		&domain.ChannelUser{},
+		&domain.Notification{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate: %v", err)

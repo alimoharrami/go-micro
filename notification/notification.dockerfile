@@ -7,7 +7,7 @@ RUN apk add --no-cache git openssh
 # Install git (needed for go mod download with private/public repos)
 WORKDIR /app
 
-RUN git config --global url."https://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@github.com/".insteadOf "https://github.com/"
+RUN git config --global url."https://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@github.com/".insteadOf "https://github.com/"
 
 # Set GOPRIVATE
 ENV GOPRIVATE=github.com/alimoharrami/go-micro*
