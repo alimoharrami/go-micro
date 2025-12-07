@@ -55,7 +55,7 @@ services:
       - laravel
 
   db_postgres:
-    image: postgres
+    image: postgres:17
     container_name: postgres
     restart: always
     environment:
@@ -71,7 +71,7 @@ services:
 
   pgadmin4:
     container_name: pgadmin4
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:8
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: alimoharrami251@gmail.com
