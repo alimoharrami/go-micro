@@ -19,7 +19,7 @@ document.getElementById('addUserForm').addEventListener('submit', async function
     });
 
     try {
-        const response = await fetch('http://localhost:8000/api/users', {
+        const response = await fetch('https://turbo-orbit-j4x6v5wrgjg2q5xx-8000.app.github.dev/api/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
