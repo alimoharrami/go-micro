@@ -6,34 +6,15 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"time"
-
+	"gateway/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := gin.Default()
 
-	// 1. Logging Middleware
-	r.Use(func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		latency := time.Since(start)
-		log.Printf("[GATEWAY] %s %s %d %s", c.Request.Method, c.Request.URL.Path, c.Writer.Status(), latency)
-	})
-
-	// 2. CORS Middleware
-	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // Ideally restrict to http://localhost:3000
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	r.Use(middleware.CORS())
+	r.Use(middleware.Logger())
 
 	// 3. Proxy Configuration
 	userServiceURL := os.Getenv("USER_SERVICE_URL")

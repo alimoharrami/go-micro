@@ -27,7 +27,6 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	gin.SetMode("release")
 
 	r := gin.Default()
-	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 
 	// Serve static files
