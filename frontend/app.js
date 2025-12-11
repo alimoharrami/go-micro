@@ -1,3 +1,7 @@
+import loadConfig from './config.js';
+
+const { API_DOMAIN } = await loadConfig();
+
 document.addEventListener('DOMContentLoaded', fetchUsers);
 
 document.getElementById('addUserForm').addEventListener('submit', async function (e) {
@@ -19,7 +23,7 @@ document.getElementById('addUserForm').addEventListener('submit', async function
     });
 
     try {
-        const response = await fetch('https://expert-acorn-6rj6qg7v57vcrj46-8000.app.github.dev/api/users', {
+        const response = await fetch(`${API_DOMAIN}/api/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -61,7 +65,7 @@ function showNotification(title, message, type) {
 async function fetchUsers() {
     console.log('Fetching users...');
     try {
-        const response = await fetch('https://expert-acorn-6rj6qg7v57vcrj46-8000.app.github.dev/api/users?page=1&limit=10');
+        const response = await fetch(`${API_DOMAIN}/api/users?page=1&limit=10`);
         if (!response.ok) {
             console.error('Failed to fetch users');
             return;
