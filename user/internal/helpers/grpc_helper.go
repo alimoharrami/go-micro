@@ -11,15 +11,16 @@ import (
 
 	"user/external/grpc/usersr"
 
+	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
-func InitilaizeGRPC(db *gorm.DB) {
+func InitilaizeGRPC(db *gorm.DB, publisher rabbitmq.IPublisher) {
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, publisher)
 
 	go func() {
 		defer func() {

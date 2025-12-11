@@ -6,6 +6,7 @@ import (
 	"user/internal/repository"
 	"user/internal/service"
 
+	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -23,7 +24,7 @@ type Controller struct {
 }
 
 // SetupRouter dynamically sets up routes
-func SetRouter(db *gorm.DB) *gin.Engine {
+func SetRouter(db *gorm.DB, publisher rabbitmq.IPublisher) *gin.Engine {
 	gin.SetMode("release")
 
 	r := gin.Default()
@@ -35,7 +36,7 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	//initialize Repositories
 	userRepo := repository.NewUserRepository(db)
 
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, publisher)
 
 	userController := handlers.NewUserController(userService)
 

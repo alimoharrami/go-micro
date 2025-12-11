@@ -8,11 +8,13 @@ import (
 	"user/internal/domain"
 	"user/internal/repository"
 
+	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
-	repo *repository.UserRepository
+	repo      *repository.UserRepository
+	publisher rabbitmq.IPublisher
 }
 
 // CreateUserInput defines user creation fields.
@@ -31,8 +33,11 @@ type UpdateUserInput struct {
 }
 
 // NewUserService initializes UserService.
-func NewUserService(repo *repository.UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(repo *repository.UserRepository, publisher rabbitmq.IPublisher) *UserService {
+	return &UserService{
+		repo:      repo,
+		publisher: publisher,
+	}
 }
 
 // GetByID fetches a user by ID
@@ -58,6 +63,17 @@ func (s *UserService) Create(ctx context.Context, input CreateUserInput) (*domai
 	if err := s.repo.Create(ctx, user); err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
+
+	// Publish notification
+	payloadData := domain.NotificationData{
+		UserID:  int(user.ID),
+		Message: "User created successfully",
+	}
+	payload := domain.Notification{
+		Type: "user_notif",
+		Data: payloadData,
+	}
+	s.publisher.PublishMessage("notification", payload)
 
 	return user, nil
 }

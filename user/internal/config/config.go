@@ -11,6 +11,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	Redis    RedisConfig
+	RabbitMQ RabbitMQConfig
 	SMTP     SMTPConfig
 	JWT      JWTConfig
 }
@@ -33,6 +34,13 @@ type RedisConfig struct {
 	Addr     string
 	Password string
 	DB       int
+}
+
+type RabbitMQConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
 }
 
 type SMTPConfig struct {
@@ -79,6 +87,12 @@ func LoadConfig() (*Config, error) {
 			Addr:     viper.GetString("REDIS_ADDR"),
 			Password: viper.GetString("REDIS_PASSWORD"),
 			DB:       viper.GetInt("REDIS_DB"),
+		},
+		RabbitMQ: RabbitMQConfig{
+			Host:     viper.GetString("RABBITMQ_HOST"),
+			Port:     viper.GetInt("RABBITMQ_PORT"),
+			User:     viper.GetString("RABBITMQ_USER"),
+			Password: viper.GetString("RABBITMQ_PASSWORD"),
 		},
 		SMTP: SMTPConfig{
 			Host:     viper.GetString("SMTP_HOST"),
