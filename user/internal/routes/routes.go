@@ -3,12 +3,8 @@ package routes
 import (
 	"user/internal/handlers"
 	"user/internal/middleware"
-	"user/internal/repository"
-	"user/internal/service"
 
-	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // Route defines the structure for dynamic routing
@@ -23,8 +19,8 @@ type Controller struct {
 	Routes []Route
 }
 
-// SetupRouter dynamically sets up routes
-func SetRouter(db *gorm.DB, publisher rabbitmq.IPublisher) *gin.Engine {
+// NewRouter dynamically sets up routes
+func NewRouter(userController *handlers.UserController) *gin.Engine {
 	gin.SetMode("release")
 
 	r := gin.Default()
@@ -32,13 +28,6 @@ func SetRouter(db *gorm.DB, publisher rabbitmq.IPublisher) *gin.Engine {
 
 	// Serve static files
 	r.Static("/static", "../../static")
-
-	//initialize Repositories
-	userRepo := repository.NewUserRepository(db)
-
-	userService := service.NewUserService(userRepo, publisher)
-
-	userController := handlers.NewUserController(userService)
 
 	// Define controllers and their routes
 	controllers := map[string]Controller{

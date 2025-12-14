@@ -28,18 +28,18 @@ services:
     networks:
       - laravel
 
-  auth-service:
-    build:
-      context: ./../auth
-      dockerfile: ./../auth/auth.dockerfile
-    restart: always
-    ports:
-      - "8082:8080"
-    deploy:
-      mode: replicated
-      replicas: 1
-    networks:
-      - laravel
+  # auth-service:
+  #   build:
+  #     context: ./../auth
+  #     dockerfile: ./../auth/auth.dockerfile
+  #   restart: always
+  #   ports:
+  #     - "8082:8080"
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   networks:
+  #     - laravel
 
   user-service:
     build:
@@ -54,31 +54,31 @@ services:
     networks:
       - laravel
 
-  blog-service:
-    build:
-      context: ./../blog
-      dockerfile: ./../blog/blog.dockerfile
-    restart: always
-    ports:
-      - "8083:8080"
-    deploy:
-      mode: replicated
-      replicas: 1
-    networks:
-      - laravel
+  # blog-service:
+  #   build:
+  #     context: ./../blog
+  #     dockerfile: ./../blog/blog.dockerfile
+  #   restart: always
+  #   ports:
+  #     - "8083:8080"
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   networks:
+  #     - laravel
 
-  notification-service:
-    build:
-      context: ./../notification
-      dockerfile: ./../notification/notification.dockerfile
-    restart: always
-    ports:
-      - "8084:8080"
-    deploy:
-      mode: replicated
-      replicas: 1
-    networks:
-      - laravel
+  # notification-service:
+  #   build:
+  #     context: ./../notification
+  #     dockerfile: ./../notification/notification.dockerfile
+  #   restart: always
+  #   ports:
+  #     - "8084:8080"
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   networks:
+  #     - laravel
 
   db_postgres:
     image: postgres:17

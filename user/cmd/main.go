@@ -3,90 +3,118 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"net/http"
 	"user/internal/config"
 	"user/internal/database"
+	"user/internal/handlers"
 	"user/internal/helpers"
 	"user/internal/logger"
+	"user/internal/repository"
 	"user/internal/routes"
 	"user/internal/server"
+	"user/internal/service"
 	"user/migrations"
 
 	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
+	"github.com/rabbitmq/amqp091-go"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 func main() {
-	// Load configuration
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		fmt.Printf("Failed to load config: %v\n", err)
-		os.Exit(1)
-	}
+	fx.New(
+		fx.Provide(
+			// Config
+			config.LoadConfig,
 
-	// Initialize Logger
-	logger.InitLogger(cfg.Server.Env)
-	logger.Info("Starting User Microservice")
-	logger.Info(fmt.Sprintf("Server port: %s", cfg.Server.Port))
+			// Logger
+			func(cfg *config.Config) *zap.Logger {
+				logger.InitLogger(cfg.Server.Env)
+				return logger.Log
+			},
 
-	// Init DB
-	_ = database.InitDatabases(database.NewPostgresConfig(), database.RedisConfig(cfg.Redis))
-	db := database.GetPostgres() // db is *gorm.DB
-	sqlDb, err := db.DB()
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("Failed to get DB connection: %v", err))
-	}
-	defer sqlDb.Close()
+			// Database Config
+			func(cfg *config.Config) database.PostgresConfig {
+				return database.PostgresConfig{
+					Host:     cfg.Database.Host,
+					Port:     cfg.Database.Port,
+					User:     cfg.Database.User,
+					Password: cfg.Database.Password, 
+					DBName:   cfg.Database.Name,
+					SSLMode:  cfg.Database.SSLMode,
+				}
+			},
 
-	// Run Migrations
-	migrations.AutoMigrate(db)
+			// Database Connection
+			database.NewPostgresConnection,
 
-	// Initialize RabbitMQ
-	rabbitCfg := &rabbitmq.RabbitMQConfig{
-		Host:     cfg.RabbitMQ.Host,
-		Port:     cfg.RabbitMQ.Port,
-		User:     cfg.RabbitMQ.User,
-		Password: cfg.RabbitMQ.Password,
-	}
-	rabbitConn, err := rabbitmq.NewRabbitMQConn(rabbitCfg, context.Background())
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("Failed to connect to RabbitMQ: %v", err))
-	}
-	defer rabbitConn.Close()
-	
-	publisher := rabbitmq.NewPublisher(rabbitConn)
+			// RabbitMQ Config
+			func(cfg *config.Config) *rabbitmq.RabbitMQConfig {
+				return &rabbitmq.RabbitMQConfig{
+					Host:     cfg.RabbitMQ.Host,
+					Port:     cfg.RabbitMQ.Port,
+					User:     cfg.RabbitMQ.User,
+					Password: cfg.RabbitMQ.Password,
+				}
+			},
 
-	// Initialize GRPC Helper
-	helpers.InitilaizeGRPC(db, publisher)
+			// RabbitMQ Connection
+			func(cfg *rabbitmq.RabbitMQConfig) (*amqp091.Connection, error) {
+				return rabbitmq.NewRabbitMQConn(cfg, context.Background())
+			},
 
-	logger.Info("Initializing router")
-	router := routes.SetRouter(db, publisher)
+			// RabbitMQ Publisher
+			func(conn *amqp091.Connection) rabbitmq.IPublisher {
+				return rabbitmq.NewPublisher(conn)
+			},
 
-	srv := server.NewServer(router)
+			// Layers
+			repository.NewUserRepository,
+			service.NewUserService,
+			handlers.NewUserController,
+			routes.NewRouter,
+			server.NewServer,
+		),
+		fx.Invoke(
+			// Migrations
+			func(db *gorm.DB) {
+				migrations.AutoMigrate(db)
+			},
 
-	// Handle graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+			// Legacy GRPC Helper
+			helpers.InitilaizeGRPC,
 
-	go func() {
-		if err := srv.Start(cfg.Server.Port); err != nil {
-			logger.Fatal(fmt.Sprintf("Failed to start service: %v", err))
-		}
-	}()
+			// Lifecycle Management
+			func(lifecycle fx.Lifecycle, srv *server.Server, cfg *config.Config, logger *zap.Logger, db *gorm.DB, rabbitConn *amqp091.Connection) {
+				lifecycle.Append(fx.Hook{
+					OnStart: func(ctx context.Context) error {
+						logger.Info("Starting User Microservice")
+						logger.Info(fmt.Sprintf("Server port: %s", cfg.Server.Port))
 
-	<-quit
-	logger.Info("Shutting down server...")
+						go func() {
+							if err := srv.Start(cfg.Server.Port); err != nil && err != http.ErrServerClosed {
+								logger.Fatal(fmt.Sprintf("Failed to start service: %v", err))
+							}
+						}()
+						return nil
+					},
+					OnStop: func(ctx context.Context) error {
+						logger.Info("Shutting down server...")
+						
+						// Close DB
+						sqlDb, err := db.DB()
+						if err == nil {
+							_ = sqlDb.Close()
+						}
 
-	// Create shutdown context with a timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+						// Close RabbitMQ
+						_ = rabbitConn.Close()
 
-	// Shutdown services gracefully
-	if err := srv.Shutdown(ctx); err != nil {
-		logger.Fatal(fmt.Sprintf("Server shutdown failed: %v", err))
-	}
-
-	logger.Info("Server gracefully stopped")
+						return srv.Shutdown(ctx)
+					},
+				})
+			},
+		),
+	).Run()
 }
