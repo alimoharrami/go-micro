@@ -3,7 +3,6 @@ package database
 import (
 	"auth/internal/config"
 	"fmt"
-	"log"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,12 +17,7 @@ type PostgresConfig struct {
 	SSLMode  string
 }
 
-func NewPostgresConfig() PostgresConfig {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
-
+func NewPostgresConfig(cfg *config.Config) PostgresConfig {
 	return PostgresConfig{
 		Host:     cfg.Database.Host,
 		Port:     cfg.Database.Port,
@@ -34,9 +28,10 @@ func NewPostgresConfig() PostgresConfig {
 	}
 }
 
-func NewPostgresConnection(config PostgresConfig) (*gorm.DB, error) {
+func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
+	pgConfig := NewPostgresConfig(cfg)
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		config.Host, config.User, config.Password, config.DBName, config.Port, config.SSLMode)
+		pgConfig.Host, pgConfig.User, pgConfig.Password, pgConfig.DBName, pgConfig.Port, pgConfig.SSLMode)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

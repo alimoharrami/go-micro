@@ -3,11 +3,8 @@ package routes
 import (
 	"auth/internal/handlers"
 	"auth/internal/middleware"
-	"auth/internal/repository"
-	"auth/internal/service"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // Route defines the structure for dynamic routing
@@ -23,7 +20,8 @@ type Controller struct {
 }
 
 // SetupRouter dynamically sets up routes
-func SetRouter(db *gorm.DB) *gin.Engine {
+// NewRouter dynamically sets up routes
+func NewRouter(authController *handlers.AuthController) *gin.Engine {
 	gin.SetMode("release")
 
 	r := gin.Default()
@@ -33,31 +31,11 @@ func SetRouter(db *gorm.DB) *gin.Engine {
 	// Serve static files
 	r.Static("/static", "../../static")
 
-	// r.GET("/", auth.JWTAuthMiddleware(), func(c *gin.Context) {
-	// 	c.HTML(http.StatusOK, "index.html", gin.H{
-	// 		"title": "Welcome to Go Backend",
-	// 	})
-	// })
-
-	//initialize Repositories
-	userRepo := repository.NewUserRepository(db)
-	roleRepo := repository.NewRoleRepository(db)
-	permissionRepo := repository.NewPermissionRepository(db)
-	rolePermissionRepo := repository.NewRolePermissionRepository(db)
-
-	roleServ := service.NewRoleService(roleRepo)
-	permissionServ := service.NewPermissionService(permissionRepo)
-	rolePermissionServ := service.NewRolePermissionService(rolePermissionRepo)
-
-	AuthService := service.NewAuthService(userRepo, rolePermissionServ, roleServ, permissionServ)
-
-	AuthController := handlers.NewAuthController(AuthService)
-
 	// Define controllers and their routes
 	controllers := map[string]Controller{
 		"auth": {
 			Routes: []Route{
-				{"POST", "/auth", AuthController.Login},
+				{"POST", "/auth", authController.Login},
 			},
 		},
 	}

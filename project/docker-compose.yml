@@ -28,18 +28,18 @@ services:
     networks:
       - laravel
 
-  # auth-service:
-  #   build:
-  #     context: ./../auth
-  #     dockerfile: ./../auth/auth.dockerfile
-  #   restart: always
-  #   ports:
-  #     - "8082:8080"
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #   networks:
-  #     - laravel
+  auth-service:
+    build:
+      context: ./../auth
+      dockerfile: ./../auth/auth.dockerfile
+    restart: always
+    ports:
+      - "8082:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - laravel
 
   user-service:
     build:
