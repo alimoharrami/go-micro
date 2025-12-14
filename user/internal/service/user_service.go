@@ -27,9 +27,9 @@ type CreateUserInput struct {
 
 // UpdateUserInput defines fields allowed for update.
 type UpdateUserInput struct {
-	FirstName *string
-	LastName  *string
-	Active    *bool
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Active    *bool   `json:"active"`
 }
 
 // NewUserService initializes UserService.
@@ -127,6 +127,34 @@ func (s *UserService) GetUsers(ctx context.Context, page, limit int) (map[string
 
 func (s *UserService) GetUserListByIDs(ctx context.Context, userIDs []uint) ([]domain.User, error) {
 	return s.repo.GetUserListByIDs(ctx, userIDs)
+}
+
+// Delete removes a user by ID
+func (s *UserService) Delete(ctx context.Context, id uint) error {
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to fetch user: %w", err)
+	}
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
+
+	// Publish delete notification
+	payloadData := domain.NotificationData{
+		UserID:  int(id),
+		Message: "User deleted successfully",
+	}
+	payload := domain.Notification{
+		Type: "user_deleted",
+		Data: payloadData,
+	}
+	s.publisher.PublishMessage("notification", payload)
+
+	return nil
 }
 
 func hashPassword(password string) (string, error) {

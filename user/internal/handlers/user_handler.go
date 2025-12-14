@@ -62,6 +62,17 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusAccepted, user)
 }
 
+func (uc *UserController) DeleteUser(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	if err := uc.service.Delete(c, uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
 func (uc *UserController) ListUsers(c *gin.Context) {
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil || page < 1 {

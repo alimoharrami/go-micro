@@ -4,90 +4,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management | Enterprise Portal</title>
+    <title>Admin Dashboard | User Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="background-globes">
-        <div class="globe globe-1"></div>
-        <div class="globe globe-2"></div>
-        <div class="globe globe-3"></div>
-    </div>
-
-    <main class="container">
-        <div class="glass-card">
-            <header class="card-header">
-                <div class="logo-area">
-                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Admin<span>Panel</span></h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-link active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
-                    <h1>User Provisioning</h1>
+                    Users
+                </a>
+                <a href="#" class="nav-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                        </path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search users...">
                 </div>
-                <p class="subtitle">Securely onboard new personnel to the ecosystem.</p>
+                <div class="user-profile">
+                    <span class="avatar">AD</span>
+                    <span class="name">Admin User</span>
+                </div>
             </header>
 
-            <form id="addUserForm" class="user-form">
-                <div class="form-grid">
-                    <div class="input-group">
-                        <label for="firstName">First Name</label>
-                        <input type="text" id="firstName" name="first_name" placeholder="e.g. Sarah" required>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="lastName">Last Name</label>
-                        <input type="text" id="lastName" name="last_name" placeholder="e.g. Connor" required>
-                    </div>
-
-                    <div class="input-group full-width">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" placeholder="sarah.connor@enterprise.co" required>
-                    </div>
-
-                    <div class="input-group full-width">
-                        <label for="password">Temporary Password</label>
-                        <input type="password" id="password" name="password" placeholder="••••••••••••" required>
-                        <div class="password-strength-meter"></div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary" id="submitBtn">
-                        <span class="btn-text">Create User</span>
-                        <div class="loader" id="btnLoader"></div>
+            <div class="content-wrapper">
+                <div class="page-header">
+                    <h1>User Management</h1>
+                    <button class="btn btn-primary" onclick="openModal('create')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add New User
                     </button>
                 </div>
-            </form>
 
-            <div id="notificationArea" class="notification-area"></div>
-
-            <div class="user-list-section">
-                <h2>User Directory</h2>
-                <div class="user-list-container">
-                    <table class="user-table">
+                <!-- Users Table -->
+                <div class="table-container shadow-card">
+                    <table class="data-table" id="usersTable">
                         <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody">
-                            <!-- Users will be populated here -->
+                        <tbody id="userListBody">
+                            <!-- Populated by JS -->
                         </tbody>
                     </table>
+                    <div class="pagination" id="pagination">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
+        </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div id="userModal" class="modal">
+        <div class="modal-content shadow-card">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New User</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="userId">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label>Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
         </div>
-    </main>
+    </div>
 
     <script type="module" src="app.js"></script>
 </body>

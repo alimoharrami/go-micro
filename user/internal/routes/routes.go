@@ -37,6 +37,7 @@ func NewRouter(userController *handlers.UserController) *gin.Engine {
 				{"POST", "/users", userController.CreateUser},
 				{"GET", "/users", userController.ListUsers},
 				{"PUT", "/users/:id", userController.UpdateUser},
+				{"DELETE", "/users/:id", userController.DeleteUser},
 			},
 		},
 	}
