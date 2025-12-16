@@ -17,13 +17,19 @@ const paginationContainer = document.getElementById('pagination');
 
 // Initialize
 async function init() {
+    // const token = localStorage.getItem('token');
+    // if (!token) {
+    //     window.location.href = 'login.html';
+    //     return;
+    // }
+
     const config = await loadConfig();
     // Default to localhost:8080 (Gateway) if origin is file:// or similar
     API_URL = config.API_DOMAIN;
     if (API_URL === 'null' || API_URL.startsWith('file://')) {
-        API_URL = 'http://localhost:8080'; 
+        API_URL = 'http://localhost:8080';
     }
-    
+
     // Remove trailing slash
     API_URL = API_URL.replace(/\/$/, "");
 
@@ -34,14 +40,24 @@ async function init() {
 // Fetch Users
 async function fetchUsers(page = 1) {
     try {
-        const response = await fetch(`${API_URL}/users?page=${page}&limit=${limit}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/users?page=${page}&limit=${limit}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+            return;
+        }
         if (!response.ok) throw new Error('Failed to fetch users');
-        
+
         const data = await response.json();
         // Backend returns: { data: [...], pagination: { ... } }
         renderTable(data.data || []); // Handle case where data might be wrapped
         renderPagination(data.pagination || {});
-        
+
         currentPage = page;
     } catch (error) {
         console.error('Error:', error);
@@ -52,7 +68,7 @@ async function fetchUsers(page = 1) {
 // Render Table
 function renderTable(users) {
     usersTableBody.innerHTML = '';
-    
+
     if (users.length === 0) {
         usersTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No users found</td></tr>`;
         return;
@@ -113,7 +129,7 @@ function renderPagination(pagination) {
 window.openModal = (mode = 'create') => {
     isEditing = mode === 'edit';
     modal.classList.add('active');
-    
+
     if (isEditing) {
         modalTitle.innerText = 'Edit User';
         document.getElementById('passwordGroup').style.display = 'none'; // Don't edit password here for simplicity
@@ -136,7 +152,7 @@ window.closeModal = () => {
 // Form Submit
 userForm.onsubmit = async (e) => {
     e.preventDefault();
-    
+
     const formData = {
         first_name: document.getElementById('firstName').value,
         last_name: document.getElementById('lastName').value,
@@ -144,7 +160,7 @@ userForm.onsubmit = async (e) => {
     };
 
     // Add only if not empty (though required fields are checked by HTML)
-    
+
     // For Update (PUT)
     if (isEditing) {
         // Backend expects UpdateUserInput: FirstName, LastName, Active pointers
@@ -152,11 +168,11 @@ userForm.onsubmit = async (e) => {
         // The current UserService Update takes fields. 
         // Let's send what we have.
         try {
-             // For simplicity, we assume we just update names. 
-             // We need to fetch the user first to fill the form properly in real app, 
-             // but here we just submit. Wait, we need to populate form first for edit.
-        } catch (e) {}
-    } 
+            // For simplicity, we assume we just update names. 
+            // We need to fetch the user first to fill the form properly in real app, 
+            // but here we just submit. Wait, we need to populate form first for edit.
+        } catch (e) { }
+    }
 
     const url = isEditing ? `${API_URL}/users/${currentUserId}` : `${API_URL}/users`;
     const method = isEditing ? 'PUT' : 'POST';
@@ -176,9 +192,13 @@ userForm.onsubmit = async (e) => {
     }
 
     try {
+        const token = localStorage.getItem('token');
         const res = await fetch(url, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(payload)
         });
 
@@ -198,8 +218,13 @@ userForm.onsubmit = async (e) => {
 window.editUser = async (id) => {
     currentUserId = id;
     try {
-        const res = await fetch(`${API_URL}/users/${id}`);
-        if(!res.ok) throw new Error("Could not fetch user");
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/users/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!res.ok) throw new Error("Could not fetch user");
         const user = await res.json();
 
         // Populate form
@@ -207,7 +232,7 @@ window.editUser = async (id) => {
         document.getElementById('lastName').value = user.last_name || '';
         document.getElementById('email').value = user.Email || '';
         document.getElementById('userId').value = user.ID;
-        
+
         // Email usually readonly on edit
         document.getElementById('email').setAttribute('readonly', 'true');
 
@@ -221,14 +246,18 @@ window.editUser = async (id) => {
 // Delete User
 window.deleteUser = async (id) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
-    
+
     try {
+        const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/users/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
 
         if (!res.ok) throw new Error("Failed to delete");
-        
+
         fetchUsers(currentPage);
     } catch (e) {
         alert(e.message);
