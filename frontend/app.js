@@ -40,6 +40,7 @@ async function init() {
 // Fetch Users
 async function fetchUsers(page = 1) {
     try {
+<<<<<<< HEAD
         const token = localStorage.getItem('token');
         const response = await fetch(`${API_URL}/users?page=${page}&limit=${limit}`, {
             headers: {
@@ -51,6 +52,12 @@ async function fetchUsers(page = 1) {
             window.location.href = 'login.html';
             return;
         }
+=======
+        const response = await fetch(`${API_URL}/api/users?page=${page}&limit=${limit}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+>>>>>>> 00d025c5414ad08ba72aa1709d1b1161f9169728
         if (!response.ok) throw new Error('Failed to fetch users');
 
         const data = await response.json();
@@ -174,7 +181,7 @@ userForm.onsubmit = async (e) => {
         } catch (e) { }
     }
 
-    const url = isEditing ? `${API_URL}/users/${currentUserId}` : `${API_URL}/users`;
+    const url = isEditing ? `${API_URL}/api/users/${currentUserId}` : `${API_URL}/api/users`;
     const method = isEditing ? 'PUT' : 'POST';
 
     const payload = {
@@ -218,6 +225,7 @@ userForm.onsubmit = async (e) => {
 window.editUser = async (id) => {
     currentUserId = id;
     try {
+<<<<<<< HEAD
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/users/${id}`, {
             headers: {
@@ -225,6 +233,13 @@ window.editUser = async (id) => {
             }
         });
         if (!res.ok) throw new Error("Could not fetch user");
+=======
+        const res = await fetch(`${API_URL}/api/users/${id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if(!res.ok) throw new Error("Could not fetch user");
+>>>>>>> 00d025c5414ad08ba72aa1709d1b1161f9169728
         const user = await res.json();
 
         // Populate form
@@ -248,12 +263,18 @@ window.deleteUser = async (id) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
 
     try {
+<<<<<<< HEAD
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_URL}/users/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
+=======
+        const res = await fetch(`${API_URL}/api/users/${id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+>>>>>>> 00d025c5414ad08ba72aa1709d1b1161f9169728
         });
 
         if (!res.ok) throw new Error("Failed to delete");
