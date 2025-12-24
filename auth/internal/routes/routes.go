@@ -25,7 +25,6 @@ func NewRouter(authController *handlers.AuthController) *gin.Engine {
 	gin.SetMode("release")
 
 	r := gin.Default()
-	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 
 	// Serve static files
