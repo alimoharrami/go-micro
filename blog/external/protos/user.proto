@@ -5,6 +5,13 @@ option go_package = "./external/protos/userpb";
 
 service UserService {
   rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc GetUsersByIDs (GetUsersRequest) returns (GetUsersResponse);
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
 }
 
 message GetUserRequest {
@@ -12,7 +19,13 @@ message GetUserRequest {
 }
 
 message GetUserResponse {
-  string id = 1;
-  string name = 2;
-  string email = 3;
+  User user = 1;
+}
+
+message GetUsersRequest {
+  repeated string ids = 1;
+}
+
+message GetUsersResponse {
+  repeated User users = 1;
 }
