@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"go-blog/internal/config"
-	"log"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,12 +17,7 @@ type PostgresConfig struct {
 	SSLMode  string
 }
 
-func NewPostgresConfig() PostgresConfig {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
-
+func NewPostgresConfig(cfg *config.Config) PostgresConfig {
 	return PostgresConfig{
 		Host:     cfg.Database.Host,
 		Port:     cfg.Database.Port,

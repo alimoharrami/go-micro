@@ -2,10 +2,7 @@ package routes
 
 import (
 	"go-blog/internal/handlers"
-	"go-blog/internal/helpers"
 	"go-blog/internal/middleware"
-	"go-blog/internal/repository"
-	"go-blog/internal/service"
 
 	"github.com/alimoharrami/go-micro/pkg/auth"
 	"github.com/gin-gonic/gin"
@@ -25,27 +22,16 @@ type Controller struct {
 }
 
 // SetupRouter dynamically sets up routes
-func SetRouter(db *gorm.DB) *gin.Engine {
+func NewRouter(db *gorm.DB, postController *handlers.PostController) *gin.Engine {
 	gin.SetMode("release")
 
 	r := gin.Default()
-	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 
 	r.LoadHTMLGlob("web/*")
 
 	// Serve static files
 	r.Static("/static", "../../static")
-
-	//grpc service
-	client := helpers.InitGRPC()
-
-	//initialize Repositories
-	postRepo := repository.NewPostRepository(db)
-
-	PostService := service.NewPostService(postRepo)
-
-	postController := handlers.NewPostController(PostService, client)
 
 	r.POST("/api/posts", auth.AuthMiddleware(), auth.RequirePermission("post:create"), postController.CreatePost)
 

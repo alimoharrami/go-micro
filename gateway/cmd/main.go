@@ -20,9 +20,11 @@ func main() {
 	// --- Proxy Configuration ---
 	userTarget := getProxyTarget("USER_SERVICE_URL", "http://user-service:8080")
 	authTarget := getProxyTarget("AUTH_SERVICE_URL", "http://auth-service:8080")
+	blogTarget := getProxyTarget("BLOG_SERVICE_URL", "http://blog-service:8080")
 
 	userProxy := httputil.NewSingleHostReverseProxy(userTarget)
 	authProxy := httputil.NewSingleHostReverseProxy(authTarget)
+	blogProxy := httputil.NewSingleHostReverseProxy(blogTarget)
 
 	// --- Routing Logic ---
 	r.Any("/api/*path", func(c *gin.Context) {
@@ -31,6 +33,11 @@ func main() {
 		// Ensure we are checking prefixes correctly
 		if strings.HasPrefix(path, "/auth") {
 			authProxy.ServeHTTP(c.Writer, c.Request)
+			return
+		}
+
+		if strings.HasPrefix(path, "/posts") {
+			blogProxy.ServeHTTP(c.Writer, c.Request)
 			return
 		}
 

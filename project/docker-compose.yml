@@ -22,6 +22,7 @@ services:
     environment:
       - USER_SERVICE_URL=http://user-service:8080
       - AUTH_SERVICE_URL=http://auth-service:8080
+      - BLOG_SERVICE_URL=http://blog-service:8080
       - PORT=8080
     deploy:
       mode: replicated
@@ -55,18 +56,18 @@ services:
     networks:
       - laravel
 
-  # blog-service:
-  #   build:
-  #     context: ./../blog
-  #     dockerfile: ./../blog/blog.dockerfile
-  #   restart: always
-  #   ports:
-  #     - "8083:8080"
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #   networks:
-  #     - laravel
+  blog-service:
+    build:
+      context: ./../blog
+      dockerfile: ./../blog/blog.dockerfile
+    restart: always
+    ports:
+      - "8083:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - laravel
 
   # notification-service:
   #   build:
