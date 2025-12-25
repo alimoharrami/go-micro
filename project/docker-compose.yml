@@ -97,19 +97,20 @@ services:
     networks:
       - laravel
 
-  pgadmin4:
-    container_name: pgadmin4
-    image: dpage/pgadmin4:8
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver
     restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: alimoharrami251@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 1234
     ports:
-      - "5050:80"
+      - "8978:8978"
+    environment:
+      CB_SERVER_NAME: CloudBeaver
+      CB_SERVER_URL: http://localhost:8978
     volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
     networks:
       - laravel
+
       
   rabbitmq:
     image: 'rabbitmq:3.9-alpine'
@@ -130,4 +131,4 @@ networks:
   laravel:
 volumes:
   local_pgdata:
-  pgadmin_data:
+  cloudbeaver_data:

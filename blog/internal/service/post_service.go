@@ -36,11 +36,12 @@ func (s *PostService) GetByID(ctx context.Context, id uint) (*domain.Post, error
 }
 
 // Create hashes password and creates a new user.
-func (s *PostService) Create(ctx context.Context, input CreatePostInput) (*domain.Post, error) {
+func (s *PostService) Create(ctx context.Context, userId uint, input CreatePostInput) (*domain.Post, error) {
 
 	post := &domain.Post{
 		Title:   input.Title,
 		Content: input.Content,
+		AuthorID: userId,
 	}
 
 	if err := s.repo.Create(ctx, post); err != nil {

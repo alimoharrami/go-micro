@@ -4,5 +4,5 @@ type Post struct {
 	ID       int
 	Title    string
 	Content  string
-	AuthorID int
+	AuthorID uint
 }

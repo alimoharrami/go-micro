@@ -49,8 +49,30 @@ func (uc *PostController) CreatePost(c *gin.Context) {
 		return
 	}
 
+	userIDVal, ok := c.Get("userID")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+var userID uint
+
+switch v := userIDVal.(type) {
+case uint:
+	userID = v
+case int:
+	userID = uint(v)
+case int64:
+	userID = uint(v)
+case float64:
+	userID = uint(v)
+default:
+	c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id type"})
+	return
+}
+
 	// Call the service layer
-	post, err := uc.service.Create(c, input)
+	post, err := uc.service.Create(c, userID, input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -59,6 +81,7 @@ func (uc *PostController) CreatePost(c *gin.Context) {
 	// Respond with created user
 	c.JSON(http.StatusCreated, post)
 }
+
 
 func (uc *PostController) ListPosts(c *gin.Context) {
 	page, err := strconv.Atoi(c.Query("page"))

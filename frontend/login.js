@@ -52,7 +52,7 @@ console.log('Constructed API_URL:', API_URL);
     submitBtn.disabled = true;
 
     try {
-        const res = await fetch(`${API_URL}/auth`, {
+        const res = await fetch(`${API_URL}/api/auth`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
