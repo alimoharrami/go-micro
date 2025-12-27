@@ -9,11 +9,13 @@ import (
 	"math"
 
 	"go-blog/external/protos/userpb"
+	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 )
 
 type PostService struct {
 	repo       *repository.PostRepository
 	userClient userpb.UserServiceClient
+	publisher  rabbitmq.IPublisher
 }
 
 // CreateUserInput defines user creation fields.
@@ -29,8 +31,8 @@ type UpdatePostInput struct {
 }
 
 // NewUserService initializes UserService.
-func NewPostService(repo *repository.PostRepository, userClient userpb.UserServiceClient) *PostService {
-	return &PostService{repo: repo, userClient: userClient}
+func NewPostService(repo *repository.PostRepository, userClient userpb.UserServiceClient, publisher rabbitmq.IPublisher) *PostService {
+	return &PostService{repo: repo, userClient: userClient, publisher: publisher}
 }
 
 // GetByID fetches a user by ID
@@ -76,6 +78,18 @@ func (s *PostService) Create(ctx context.Context, userId uint, input CreatePostI
 
 	if err := s.repo.Create(ctx, post); err != nil {
 		return nil, fmt.Errorf("failed to create post: %w", err)
+	}
+
+	// Publish notification
+	notification := map[string]interface{}{
+		"type": "blog_created",
+		"data": map[string]interface{}{
+			"message": fmt.Sprintf("New blog post created: %s", post.Title),
+			"user_id": post.AuthorID,
+		},
+	}
+	if err := s.publisher.PublishMessage("notification", notification); err != nil {
+		fmt.Printf("failed to publish blog notification: %v\n", err)
 	}
 
 	return post, nil

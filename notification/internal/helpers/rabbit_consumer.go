@@ -10,7 +10,8 @@ import (
 )
 
 type RabbitConsumer struct {
-	EmailService *service.EmailService
+	EmailService   *service.EmailService
+	ChannelService *service.ChannelService
 }
 
 type NotificationData struct {
@@ -23,9 +24,10 @@ type Notification struct {
 	Data NotificationData `json:"data"`
 }
 
-func NewRabbitConsumer(EmailService *service.EmailService) *RabbitConsumer {
+func NewRabbitConsumer(EmailService *service.EmailService, ChannelService *service.ChannelService) *RabbitConsumer {
 	return &RabbitConsumer{
-		EmailService: EmailService,
+		EmailService:   EmailService,
+		ChannelService: ChannelService,
 	}
 }
 
@@ -74,6 +76,9 @@ func (c *RabbitConsumer) ConsumeMessage(ctx context.Context, conn *amqp091.Conne
 
 				if payload.Type == "user_notif" {
 					c.EmailService.SendEmailUserID(ctx, payload.Data.UserID, payload.Data.Message)
+				} else if payload.Type == "blog_created" {
+					log.Printf("Broadcasting blog creation notification: %s", payload.Data.Message)
+					c.ChannelService.SendNotif(ctx, "main", payload.Data.Message)
 				}
 			} else {
 				log.Printf("there is a problem here %v", err)

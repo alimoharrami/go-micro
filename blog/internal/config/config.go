@@ -13,6 +13,7 @@ type Config struct {
 	Redis    RedisConfig
 	SMTP     SMTPConfig
 	JWT      JWTConfig
+	RabbitMQ RabbitMQConfig
 }
 
 type ServerConfig struct {
@@ -46,6 +47,13 @@ type SMTPConfig struct {
 type JWTConfig struct {
 	Secret string
 	Expiry string
+}
+
+type RabbitMQConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
 }
 
 func LoadConfig() (*Config, error) {
@@ -91,8 +99,14 @@ func LoadConfig() (*Config, error) {
 			Secret: viper.GetString("JWT_SECRET"),
 			Expiry: viper.GetString("JWT_EXPIRY"),
 		},
+		RabbitMQ: RabbitMQConfig{
+			Host:     viper.GetString("RABBITMQ_HOST"),
+			Port:     viper.GetInt("RABBITMQ_PORT"),
+			User:     viper.GetString("RABBITMQ_USER"),
+			Password: viper.GetString("RABBITMQ_PASSWORD"),
+		},
 	}
-		return config, nil
+	return config, nil
 }
 
 // DSN returns the Data Source Name for PostgreSQL connection

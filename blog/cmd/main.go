@@ -13,9 +13,34 @@ import (
 	"go-blog/migrations"
 	"log"
 
+	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
+
+func NewRabbitConfig(cfg *config.Config) rabbitmq.RabbitMQConfig {
+	return rabbitmq.RabbitMQConfig{
+		Host:     cfg.RabbitMQ.Host,
+		Port:     cfg.RabbitMQ.Port,
+		User:     cfg.RabbitMQ.User,
+		Password: cfg.RabbitMQ.Password,
+	}
+}
+
+func NewRabbitConn(cfg rabbitmq.RabbitMQConfig, lc fx.Lifecycle) (*amqp.Connection, error) {
+	ctx := context.Background()
+	conn, err := rabbitmq.NewRabbitMQConn(&cfg, ctx)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return conn.Close()
+		},
+	})
+	return conn, nil
+}
 
 func main() {
 	fx.New(
@@ -26,6 +51,11 @@ func main() {
 			// Database
 			database.NewPostgresConfig,
 			database.NewPostgresConnection,
+
+			// RabbitMQ
+			NewRabbitConfig,
+			NewRabbitConn,
+			rabbitmq.NewPublisher,
 
 			// GRPC Client
 			helpers.InitGRPC,
