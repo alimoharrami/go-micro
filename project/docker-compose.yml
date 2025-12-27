@@ -23,6 +23,7 @@ services:
       - USER_SERVICE_URL=http://user-service:8080
       - AUTH_SERVICE_URL=http://auth-service:8080
       - BLOG_SERVICE_URL=http://blog-service:8080
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8080
       - PORT=8080
     deploy:
       mode: replicated
@@ -69,18 +70,18 @@ services:
     networks:
       - laravel
 
-  # notification-service:
-  #   build:
-  #     context: ./../notification
-  #     dockerfile: ./../notification/notification.dockerfile
-  #   restart: always
-  #   ports:
-  #     - "8084:8080"
-  #   deploy:
-  #     mode: replicated
-  #     replicas: 1
-  #   networks:
-  #     - laravel
+  notification-service:
+    build:
+      context: ./../notification
+      dockerfile: ./../notification/notification.dockerfile
+    restart: always
+    ports:
+      - "8084:8080"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - laravel
 
   db_postgres:
     image: postgres:17

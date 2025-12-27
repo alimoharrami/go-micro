@@ -135,6 +135,9 @@ function renderTable(users) {
                     <button class="btn-icon delete" onclick="window.deleteUser(${user.ID})">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </button>
+                    <button class="btn-icon" onclick="window.subscribeChannel(${user.ID})" title="Subscribe to Main Channel">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </button>
                 </div>
             </td>
         `;
@@ -390,6 +393,33 @@ window.deleteBlog = async (id) => {
         });
         if (!res.ok) throw new Error("Failed to delete");
         fetchBlogs(currentPage);
+    } catch (e) {
+        alert(e.message);
+    }
+};
+
+// Subscription Action
+window.subscribeChannel = async (userId) => {
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/notification/subscribe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                channel: "main",
+                userID: parseInt(userId)
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Subscription failed');
+        }
+
+        alert('Subscribed successfully!');
     } catch (e) {
         alert(e.message);
     }

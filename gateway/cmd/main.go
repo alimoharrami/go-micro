@@ -21,10 +21,12 @@ func main() {
 	userTarget := getProxyTarget("USER_SERVICE_URL", "http://user-service:8080")
 	authTarget := getProxyTarget("AUTH_SERVICE_URL", "http://auth-service:8080")
 	blogTarget := getProxyTarget("BLOG_SERVICE_URL", "http://blog-service:8080")
+	notificationTarget := getProxyTarget("NOTIFICATION_SERVICE_URL", "http://notification-service:8080")
 
 	userProxy := httputil.NewSingleHostReverseProxy(userTarget)
 	authProxy := httputil.NewSingleHostReverseProxy(authTarget)
 	blogProxy := httputil.NewSingleHostReverseProxy(blogTarget)
+	notificationProxy := httputil.NewSingleHostReverseProxy(notificationTarget)
 
 	// --- Routing Logic ---
 	r.Any("/api/*path", func(c *gin.Context) {
@@ -38,6 +40,11 @@ func main() {
 
 		if strings.HasPrefix(path, "/posts") {
 			blogProxy.ServeHTTP(c.Writer, c.Request)
+			return
+		}
+
+		if strings.HasPrefix(path, "/notification") {
+			notificationProxy.ServeHTTP(c.Writer, c.Request)
 			return
 		}
 
