@@ -30,24 +30,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Config struct {
-	Rabbit *amqp.Connection
-}
-
-type AppParams struct {
-	fx.In
-
-	Lifecycle  fx.Lifecycle
-	Cfg        *config.Config
-	DB         *gorm.DB
-	Client     userpb.UserServiceClient
-	EmailSvc   *service.EmailService
-	RabbitCfg  rabbitmq.RabbitMQConfig
-	RabbitCon  *helpers.RabbitConsumer
-	RabbitConn *amqp.Connection
-	Router     *gin.Engine
-}
-
 func NewRabbitConfig(cfg *config.Config) rabbitmq.RabbitMQConfig {
 	return rabbitmq.RabbitMQConfig{
 		Host:     "rabbitmq",
@@ -122,6 +104,7 @@ func wsHandler(c *gin.Context) {
 		broadcast <- string(msg)
 	}
 }
+
 func handleBroadcast() {
 	for {
 		msg := <-broadcast
@@ -137,48 +120,51 @@ func handleBroadcast() {
 	}
 }
 
-func StartApp(p AppParams) {
+func RunMigrations(db *gorm.DB) {
+	migrations.AutoMigrate(db)
+}
 
-	migrations.AutoMigrate(p.DB)
+func RegisterHooks(
+	lc fx.Lifecycle,
+	cfg *config.Config,
+	db *gorm.DB,
+	rabbitConn *amqp.Connection,
+	rabbitCon *helpers.RabbitConsumer,
+	router *gin.Engine,
+) {
+	srv := server.NewServer(router)
 
-	connection := p.RabbitConn
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			log.Printf("Starting Notification Microservice on port %s", cfg.Server.Port)
 
-	p.RabbitCon.ConsumeMessage(context.Background(), connection, "notification")
+			// Start RabbitMQ consumer
+			go rabbitCon.ConsumeMessage(context.Background(), rabbitConn, "notification")
 
-	//Initialize Redis
-	// redisClient := database.GetRedis()
-	// defer redisClient.Close()
+			// Start HTTP server
+			go func() {
+				if err := srv.Start(cfg.Server.Port); err != nil && err != http.ErrServerClosed {
+					log.Printf("Server start error: %v", err)
+				}
+			}()
 
-	// p.Router.GET("/ws", wsHandler)
+			// Start broadcast loop
+			go handleBroadcast()
 
-	// Start broadcaster
-	// go handleBroadcast()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			log.Println("Shutting down Notification Microservice...")
 
-	// Send a notification every 5 seconds
-	// go func() {
-	// 	for {
-	// 		broadcast <- fmt.Sprintf("Notification at %s", time.Now().Format(time.RFC1123))
-	// 		time.Sleep(5 * time.Second)
-	// 	}
-	// }()
+			// RabbitMQ connection is closed by its own hook in NewRabbitConn if needed,
+			// or we can explicitly close it here.
+			if rabbitConn != nil {
+				_ = rabbitConn.Close()
+			}
 
-	srv := server.NewServer(p.Router)
-	port := p.Cfg.Server.Port
-
-	go func() {
-		if err := srv.Start(port); err != nil {
-			log.Fatalf("Failed to start service: %v", err)
-		}
-	}()
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	fmt.Println("Shutting down server...")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	srv.Shutdown(ctx)
-	fmt.Println("Server gracefully stopped")
+			return srv.Shutdown(ctx)
+		},
+	})
 }
 
 func main() {
@@ -199,6 +185,9 @@ func main() {
 			handlers.NewNotificationBoradcastHandler,
 			routes.SetRouter,
 		),
-		fx.Invoke(StartApp),
+		fx.Invoke(
+			RunMigrations,
+			RegisterHooks,
+		),
 	).Run()
 }
