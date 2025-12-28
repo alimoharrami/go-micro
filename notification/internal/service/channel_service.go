@@ -44,6 +44,8 @@ func (s *ChannelService) Subscribe(ctx context.Context, userID int, channel stri
 }
 
 func (s *ChannelService) SendNotif(ctx context.Context, channle string, message string) error {
+	log.Printf("sending notif to channel %v: %v", channle, message)
+	
 	subscriberIDs, err := s.channelRep.GetSubscriberIDs(ctx, channle)
 
 	if err != nil {

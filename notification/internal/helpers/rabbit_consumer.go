@@ -37,8 +37,6 @@ func (c *RabbitConsumer) ConsumeMessage(ctx context.Context, conn *amqp091.Conne
 		log.Printf("Error in opening channel to consume message")
 	}
 
-	defer ch.Close()
-
 	q, err := ch.QueueDeclare(
 		queue, // queue name
 		true,  // durable

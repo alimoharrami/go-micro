@@ -10,6 +10,9 @@ WORKDIR /app
 # Set GOPRIVATE
 ENV GOPRIVATE=github.com/alimoharrami/go-micro*
 
+ENV GOMAXPROCS=1
+ENV GOFLAGS="-p=1"
+
 COPY go.mod go.sum ./
 RUN go mod download
 

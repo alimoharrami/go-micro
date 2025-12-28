@@ -31,7 +31,6 @@ func SetRouter(db *gorm.DB,
 	gin.SetMode("release")
 
 	r := gin.Default()
-	r.Use(middleware.CORS())
 	r.Use(middleware.Logger())
 	r.Static("/static", "../../static")
 

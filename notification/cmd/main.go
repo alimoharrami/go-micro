@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"notification/external/protos/userpb"
 	"notification/internal/database"
 	"notification/internal/handlers"
 	"notification/internal/helpers"
@@ -13,10 +12,7 @@ import (
 	"notification/internal/migrations"
 	"notification/internal/repository"
 	"notification/internal/service"
-	"os"
-	"os/signal"
 	"sync"
-	"time"
 
 	"notification/internal/config"
 	"notification/internal/routes"
@@ -185,9 +181,21 @@ func main() {
 			handlers.NewNotificationBoradcastHandler,
 			routes.SetRouter,
 		),
-		fx.Invoke(
-			RunMigrations,
-			RegisterHooks,
-		),
-	).Run()
+	fx.Invoke(
+		RunMigrations,
+		RegisterHooks,
+		func(
+			lc fx.Lifecycle,
+			consumer *helpers.RabbitConsumer,
+			conn *amqp.Connection,
+		) {
+			lc.Append(fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					go consumer.ConsumeMessage(ctx, conn, "notification_queue")
+					return nil
+				},
+			})
+		},
+	),
+).Run()
 }
