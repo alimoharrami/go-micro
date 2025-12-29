@@ -69,7 +69,7 @@ function connectWebSocket() {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // Use the same domain as API_URL but swap protocol and path
     const url = new URL(API_URL);
-    const wsUrl = `${wsProtocol}//${url.host}/api/notification/ws`;
+    const wsUrl = `${wsProtocol}//psychic-space-system-pw797qqr4736p4x-8084.app.github.dev/notification/ws`;
 
     console.log('Connecting to WebSocket:', wsUrl);
     const socket = new WebSocket(wsUrl);

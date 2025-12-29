@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"notification/internal/database"
@@ -12,7 +11,6 @@ import (
 	"notification/internal/migrations"
 	"notification/internal/repository"
 	"notification/internal/service"
-	"sync"
 
 	"notification/internal/config"
 	"notification/internal/routes"
@@ -20,7 +18,6 @@ import (
 
 	"github.com/alimoharrami/go-micro/pkg/rabbitmq"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/fx"
 	"gorm.io/gorm"

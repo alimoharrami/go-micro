@@ -7,6 +7,7 @@ import (
 	"notification/internal/domain"
 	"notification/internal/repository"
 	"strconv"
+	"notification/internal/hub"
 )
 
 type ChannelService struct {

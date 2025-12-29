@@ -41,14 +41,19 @@ func (h *NotificationHelper) Broadcast(msg string) {
 
 func (h *NotificationHelper) run() {
 	for msg := range h.broadcast {
+		var deadClients []*websocket.Conn
+
 		h.mu.Lock()
 		for client := range h.clients {
-			err := client.WriteMessage(websocket.TextMessage, []byte(msg))
-			if err != nil {
+			if err := client.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 				fmt.Println("Write error:", err)
-				h.RemoveClient(client)
+				deadClients = append(deadClients, client)
 			}
 		}
 		h.mu.Unlock()
+
+		for _, c := range deadClients {
+			h.RemoveClient(c)
+		}
 	}
 }
