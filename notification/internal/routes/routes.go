@@ -35,7 +35,7 @@ func SetRouter(db *gorm.DB,
 	r.Static("/static", "../../static")
 
 	// Serve static files
-	r.GET("/ws", notificationBroadCastHandler.WebSocket)
+	r.GET("/notification/ws", notificationBroadCastHandler.WebSocket)
 	r.POST("/notification/broadcast", notificationBroadCastHandler.HandlePostNotification)
 
 	controllers := map[string]Controller{

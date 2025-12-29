@@ -38,8 +38,91 @@ async function init() {
     API_URL = API_URL.replace(/\/$/, "");
 
     console.log('API Endpoint:', API_URL);
+    setupNotifications();
     fetchUsers();
     fetchBlogs();
+}
+
+// Notifications Logic
+let notifications = [];
+function setupNotifications() {
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const notificationList = document.getElementById('notificationList');
+
+    notificationBtn.onclick = (e) => {
+        e.stopPropagation();
+        notificationDropdown.classList.toggle('active');
+        if (notificationDropdown.classList.contains('active')) {
+            notificationBadge.style.display = 'none';
+        }
+    };
+
+    document.onclick = () => notificationDropdown.classList.remove('active');
+
+    connectWebSocket();
+}
+
+function connectWebSocket() {
+    // Determine WS protocol
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Use the same domain as API_URL but swap protocol and path
+    const url = new URL(API_URL);
+    const wsUrl = `${wsProtocol}//${url.host}/api/notification/ws`;
+
+    console.log('Connecting to WebSocket:', wsUrl);
+    const socket = new WebSocket(wsUrl);
+
+    socket.onmessage = (event) => {
+        console.log('Notification received:', event.data);
+        addNotification(event.data);
+    };
+
+    socket.onclose = () => {
+        console.log('WebSocket disconnected, retrying in 5s...');
+        setTimeout(connectWebSocket, 5000);
+    };
+
+    socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+}
+
+function addNotification(message) {
+    const notificationBadge = document.getElementById('notificationBadge');
+    const notificationList = document.getElementById('notificationList');
+
+    // Update state
+    notifications.unshift({
+        message,
+        time: new Date().toLocaleTimeString()
+    });
+
+    // Update Badge
+    const dropdown = document.getElementById('notificationDropdown');
+    if (!dropdown.classList.contains('active')) {
+        notificationBadge.style.display = 'flex';
+        notificationBadge.innerText = parseInt(notificationBadge.innerText || 0) + 1;
+    }
+
+    // Update List
+    renderNotifications();
+}
+
+function renderNotifications() {
+    const notificationList = document.getElementById('notificationList');
+    if (notifications.length === 0) {
+        notificationList.innerHTML = '<p class="empty-msg">No new notifications</p>';
+        return;
+    }
+
+    notificationList.innerHTML = notifications.map(n => `
+        <div class="notification-item">
+            <p>${n.message}</p>
+            <span class="time">${n.time}</span>
+        </div>
+    `).join('');
 }
 
 // View Switcher

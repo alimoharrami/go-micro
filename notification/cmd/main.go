@@ -56,66 +56,7 @@ func NewRabbitConn(cfg rabbitmq.RabbitMQConfig, lc fx.Lifecycle) *amqp.Connectio
 	}
 }
 
-// Upgrade HTTP -> WebSocket
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
-}
-
-// Store connected clients safely
-var clients = make(map[*websocket.Conn]bool)
-var mu sync.Mutex
-
-// Broadcast channel
-var broadcast = make(chan string)
-
-func wsHandler(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		fmt.Println("Upgrade error:", err)
-		return
-	}
-	defer conn.Close()
-
-	// Add client
-	mu.Lock()
-	clients[conn] = true
-	mu.Unlock()
-	fmt.Println("Client connected")
-
-	// Remove on disconnect
-	defer func() {
-		mu.Lock()
-		delete(clients, conn)
-		mu.Unlock()
-		fmt.Println("Client disconnected")
-	}()
-
-	// Read messages from this client
-	for {
-		_, msg, err := conn.ReadMessage()
-		if err != nil {
-			break
-		}
-		// Send message to broadcast channel
-		broadcast <- string(msg)
-	}
-}
-
-func handleBroadcast() {
-	for {
-		msg := <-broadcast
-		mu.Lock()
-		for client := range clients {
-			err := client.WriteMessage(websocket.TextMessage, []byte(msg))
-			if err != nil {
-				client.Close()
-				delete(clients, client)
-			}
-		}
-		mu.Unlock()
-	}
-}
-
+// RunMigrations performs database migrations
 func RunMigrations(db *gorm.DB) {
 	migrations.AutoMigrate(db)
 }
@@ -143,9 +84,6 @@ func RegisterHooks(
 					log.Printf("Server start error: %v", err)
 				}
 			}()
-
-			// Start broadcast loop
-			go handleBroadcast()
 
 			return nil
 		},
@@ -178,7 +116,7 @@ func main() {
 			repository.NewChannelRepository,
 			service.NewChannelService,
 			handlers.NewNotificationController,
-			handlers.NewNotificationBoradcastHandler,
+			handlers.NewNotificationBroadcastHandler,
 			routes.SetRouter,
 		),
 	fx.Invoke(

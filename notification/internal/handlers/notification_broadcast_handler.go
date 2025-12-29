@@ -17,7 +17,7 @@ type NotificationBroadcastHandler struct {
 	hub *hub.NotificationHelper
 }
 
-func NewNotificationBoradcastHandler(hub *hub.NotificationHelper) *NotificationBroadcastHandler {
+func NewNotificationBroadcastHandler(hub *hub.NotificationHelper) *NotificationBroadcastHandler {
 	return &NotificationBroadcastHandler{hub: hub}
 }
 

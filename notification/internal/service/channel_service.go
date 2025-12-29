@@ -12,6 +12,7 @@ import (
 type ChannelService struct {
 	channelRep *repository.ChannelRepository
 	userClient userpb.UserServiceClient
+	hub        *hub.NotificationHelper
 }
 
 type CreateChannelInput struct {
@@ -19,10 +20,15 @@ type CreateChannelInput struct {
 	Description string
 }
 
-func NewChannelService(channelRep *repository.ChannelRepository, userClient userpb.UserServiceClient) *ChannelService {
+func NewChannelService(
+	channelRep *repository.ChannelRepository,
+	userClient userpb.UserServiceClient,
+	hub *hub.NotificationHelper,
+) *ChannelService {
 	return &ChannelService{
 		channelRep: channelRep,
 		userClient: userClient,
+		hub:        hub,
 	}
 }
 
@@ -45,7 +51,12 @@ func (s *ChannelService) Subscribe(ctx context.Context, userID int, channel stri
 
 func (s *ChannelService) SendNotif(ctx context.Context, channle string, message string) error {
 	log.Printf("sending notif to channel %v: %v", channle, message)
-	
+
+	// Broadcast via WebSocket
+	if s.hub != nil {
+		s.hub.Broadcast(message)
+	}
+
 	subscriberIDs, err := s.channelRep.GetSubscriberIDs(ctx, channle)
 
 	if err != nil {
